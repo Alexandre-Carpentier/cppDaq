@@ -1,0 +1,10 @@
+#pragma once
+
+enum class DAQ_CO_CREATE_STATUS {
+    NO_ERR = 0,
+    INPUTS_NOT_VALID,
+    ERR_CREATE_TASK,
+    ERR_CREATE_CO_PULSE,
+    ERR_CREATE_CO_DRIVE_TYPE,
+    ERR_CREATE_CO_START
+};
