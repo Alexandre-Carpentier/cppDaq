@@ -1,357 +1,880 @@
-= cppDaq HowTo (C++ and C)
-:toc:
-:toclevels: 3
-:sectnums:
+﻿# cppDaq - HowTo Guide
 
-This document explains how to use:
+**A modern C++ and C API for NI DAQ hardware abstraction**
 
-- the C++ API via `cppDaq` (recommended interface),
-- the C API via `daq_c.h` (ABI compatible, but less safe).
+[![C++23](https://img.shields.io/badge/C++-23-blue.svg)](https://isocpp.org/)
+[![CMake](https://img.shields.io/badge/CMake-3.20+-064F8C.svg)](https://cmake.org/)
 
-== Overview
+---
 
-The project exposes a NI DAQ abstraction with:
+## 📚 Table of Contents
 
-- analog reading,
-- analog and digital writing,
-- digital PWM generation (hardware and software),
-- analog PWM generation,
-- status retrieval and device list.
+- [Overview](#overview)
+- [Features](#features)
+- [Build Instructions](#build-instructions)
+- [C++ API (Recommended)](#c-api-cppdaq)
+- [C API (Compatibility)](#c-api-daq_ch)
+- [Best Practices](#best-practices)
 
-== Build
+---
 
-- The project is built as a shared library (`cppDaq.dll` on Windows, `libcppDaq.so` on Linux).
-- The C++ API is the primary interface, while the C API is provided for compatibility and interoperability with C code or other languages that can call C functions.
-- Use CMAKE:
-- `mkdir build && cd build && cmake ..` to configure cmake.
-- `make` to build the library.
+## 🎯 Overview
 
+This document explains how to use the **cppDaq** library with two distinct interfaces:
 
+| Interface | Description | Use Case |
+|-----------|-------------|----------|
+| **C++ API** (`cppDaq`) | ✅ Recommended interface with strong type safety | Modern C++ projects |
+| **C API** (`daq_c.h`) | ⚠️ ABI-compatible but less safe | C code, FFI, or legacy integration |
 
-The C++ API uses *strong types* (`analog_pin`, `digital_pin`, `Frequency_hz<double>`, etc.) to limit manipulation errors.
+---
 
-== C++ API (`cppDaq`)
+## ✨ Features
 
-=== Prerequisites
+The **cppDaq** library provides a comprehensive NI DAQ abstraction with:
 
-- Include `cppDaq`.
-- Link the `cppDaq` library and NI-DAQmx dependencies.
-- Verify that the NI device is present (via `GetDeviceList()`).
+- 📊 **Analog I/O**: Read and write analog signals
+- 🔌 **Digital I/O**: Control digital pins with HIGH/LOW states
+- 📡 **PWM Generation**:
+  - Hardware-based digital PWM (high precision)
+  - Software-emulated digital PWM (flexible)
+  - Analog PWM generation
+- 🔍 **Device Management**: List and select available DAQ devices
+- ⚡ **Status Monitoring**: Real-time error checking and validation
 
-=== Minimal C++ Example
+---
 
-[source,cpp]
-----
+## 🛠️ Build Instructions
+
+### Prerequisites
+
+- **CMake** ≥ 3.20
+- **C++23** compatible compiler
+- **NI-DAQmx** drivers installed
+
+### Build Steps
+
+```bash
+# 1. Create build directory
+mkdir build && cd build
+
+# 2. Configure CMake
+cmake ..
+
+# 3. Build the library
+make
+```
+
+### Output
+
+- **Windows**: `cppDaq.dll`
+- **Linux**: `libcppDaq.so`
+
+> 💡 **Note**: The C++ API uses **strong types** (`analog_pin`, `digital_pin`, `Frequency_hz<double>`, etc.) to prevent manipulation errors at compile-time.
+
+---
+
+## 🚀 C++ API (`cppDaq`)
+
+### Prerequisites
+
+Before using the C++ API, ensure you have:
+
+1. ✅ Included the `cppDaq` header
+2. ✅ Linked the `cppDaq` library and NI-DAQmx dependencies
+3. ✅ Verified device availability using `GetDeviceList()`
+
+---
+
+### 📝 Quick Start Example
+
+```cpp
 #include "cppDaq"
 #include <iostream>
 
 int main()
 {
-	auto devices = GetDeviceList();
-	if (devices.empty()) {
-		std::cerr << "No device detected\n";
-		return 1;
-	}
+    // 1. Detect available devices
+    auto devices = GetDeviceList();
+    if (devices.empty()) {
+        std::cerr << "❌ No device detected\n";
+        return 1;
+    }
 
-	DaqConfig config;
-	config.withDevice(devices[0])
-		  .withAnalogPins({0})
-		  .withDigitalPins({0})
-		  .withAnalogContinuous({})
-		  .withDigitalContinuous({0});
+    // 2. Configure the DAQ with fluent API
+    DaqConfig config;
+    config.withDevice(devices[0])
+          .withAnalogPins({0})
+          .withDigitalPins({0})
+          .withAnalogContinuous({})
+          .withDigitalContinuous({0});
 
-	cppDaq daq(config);
+    // 3. Initialize the DAQ
+    cppDaq daq(config);
 
-	if (daq.GetStatus() != DAQ_STATUS::NO_ERR) {
-		std::cerr << "DAQ initialization error\n";
-		return 1;
-	}
+    // 4. Verify initialization
+    if (daq.GetStatus() != DAQ_STATUS::NO_ERR) {
+        std::cerr << "❌ DAQ initialization error\n";
+        return 1;
+    }
 
-	const double v = daq.ReadAnalogPin(analog_pin(0));
-	std::cout << "AI0 = " << v << " V\n";
+    // 5. Read analog input
+    const double voltage = daq.ReadAnalogPin(analog_pin(0));
+    std::cout << "📊 AI0 = " << voltage << " V\n";
 
-	daq.WriteDigitalPin(digital_pin(0), digital_state::HIGH);
-	return 0;
+    // 6. Write digital output
+    daq.WriteDigitalPin(digital_pin(0), digital_state::HIGH);
+    std::cout << "✅ Digital pin 0 set to HIGH\n";
+
+    return 0;
 }
-----
+```
 
-=== Important Types (C++)
+---
 
-- `analog_pin`, `digital_pin`, `analog_pin_continuous`, `digital_pin_continuous`: typed pin identifiers.
-- `analog_pins`, `digital_pins`, `analog_pins_continuous`, `digital_pins_continuous`: pin lists for configuration.
-- `Frequency_hz<double>`: frequency in hertz for PWM functions.
-- `digital_state::{LOW,HIGH}`: logic state for digital output.
+### 🔑 Important Types
 
-=== Complete C++ Function Reference
+| Type | Description |
+|------|-------------|
+| `analog_pin` | Strong type for analog pin identifiers |
+| `digital_pin` | Strong type for digital pin identifiers |
+| `analog_pin_continuous` | Analog pin for continuous/streaming operations |
+| `digital_pin_continuous` | Digital pin for continuous/streaming operations |
+| `analog_pins` | Collection of analog pins for configuration |
+| `digital_pins` | Collection of digital pins for configuration |
+| `Frequency_hz<double>` | Type-safe frequency representation in Hertz |
+| `digital_state::{LOW, HIGH}` | Enumeration for digital logic states |
 
-==== `std::vector<std::string> GetDeviceList()`
+---
 
-Retrieves the list of detected DAQ device names.
+### 📖 Complete Function Reference
 
-- Input: none.
-- Output: list of names (e.g., `Dev1`).
-- Typical usage: choose the device to pass to `DaqConfig::withDevice()`.
+#### 🔍 Device Discovery
 
-==== `cppDaq::cppDaq(const DaqConfig& config)`
+##### `GetDeviceList()`
 
-Constructs a DAQ instance with named configuration (recommended API).
+```cpp
+std::vector<std::string> GetDeviceList()
+```
 
-- Input: `DaqConfig` (device + analog/digital pins + continuous pins).
-- Output: `cppDaq` object.
-- Verification: call `GetStatus()` right after construction.
+Retrieves all detected DAQ device names.
 
-==== `cppDaq::cppDaq(const std::string, const analog_pins, const digital_pins, const analog_pins_continuous, const digital_pins_continuous)`
+| | |
+|---------|----------|
+| **Input** | None |
+| **Output** | List of device names (e.g., `"Dev1"`, `"Dev2"`) |
+| **Usage** | Choose the device to pass to `DaqConfig::withDevice()` |
 
-Old constructor (deprecated), kept for compatibility.
+**Example:**
+```cpp
+auto devices = GetDeviceList();
+for (const auto& dev : devices) {
+    std::cout << "Found device: " << dev << "\n";
+}
+```
 
-- Functional equivalent: use `DaqConfig`.
-- Recommendation: do not use in new code.
+---
 
-==== `DAQ_STATUS cppDaq::GetStatus()`
+#### 🏗️ Construction
 
-Returns the current state of the DAQ object.
+##### `cppDaq(const DaqConfig& config)` ⭐ Recommended
 
-Possible values:
+```cpp
+cppDaq::cppDaq(const DaqConfig& config)
+```
 
-- `NO_ERR`
-- `INPUTS_NOT_VALID`
-- `DAQ_RETRIEVE_NAME_FAIL`
-- `DAQ_TEST_DEVICE_FAIL`
-- `DAQ_NAME_EMPTY`
-- `ERR_CREATE_IO_FAIL`
-- `DAQ_NOT_INITIALIZED`
+Constructs a DAQ instance using the modern configuration API.
 
-==== `double cppDaq::ReadAnalogPin(analog_pin pin)`
+| | |
+|---------|----------|
+| **Input** | `DaqConfig` object (device + pin configurations) |
+| **Output** | `cppDaq` instance |
+| **Note** | ⚠️ Always call `GetStatus()` after construction |
 
-Reads the voltage of an analog input.
+**Example:**
+```cpp
+DaqConfig config;
+config.withDevice("Dev1")
+      .withAnalogPins({0, 1})
+      .withDigitalPins({0, 1, 2});
 
-- Input: analog pin (`analog_pin`).
-- Output: voltage in volts (`double`).
-- Precondition: the pin must be part of the analog configuration.
+cppDaq daq(config);
+if (daq.GetStatus() != DAQ_STATUS::NO_ERR) {
+    // Handle error
+}
+```
 
-==== `std::array<double, 1000> cppDaq::ReadMultipleAnalogPin(analog_pin pin)`
+---
 
-Reads a buffer of 1000 samples on an analog input.
+##### `cppDaq(...)` ⚠️ Deprecated
 
-- Input: analog pin.
-- Output: fixed array of 1000 values (`double`).
-- Usage: short multi-sample acquisition.
+```cpp
+cppDaq::cppDaq(const std::string, const analog_pins, 
+               const digital_pins, const analog_pins_continuous, 
+               const digital_pins_continuous)
+```
 
-==== `bool cppDaq::WriteAnalogPin(analog_pin pin, double value)`
+| | |
+|---------|----------|
+| **Status** | ⚠️ **Deprecated** - Kept for backward compatibility |
+| **Recommendation** | Use `DaqConfig` constructor instead |
+
+---
+
+#### ⚡ Status Checking
+
+##### `GetStatus()`
+
+```cpp
+DAQ_STATUS cppDaq::GetStatus()
+```
+
+Returns the current operational state of the DAQ.
+
+**Possible Return Values:**
+
+| Status | Meaning |
+|--------|---------|
+| `NO_ERR` | ✅ Everything operational |
+| `INPUTS_NOT_VALID` | ❌ Invalid input parameters |
+| `DAQ_RETRIEVE_NAME_FAIL` | ❌ Failed to retrieve device name |
+| `DAQ_TEST_DEVICE_FAIL` | ❌ Device test failed |
+| `DAQ_NAME_EMPTY` | ❌ Device name is empty |
+| `ERR_CREATE_IO_FAIL` | ❌ I/O creation failed |
+| `DAQ_NOT_INITIALIZED` | ❌ DAQ not properly initialized |
+
+---
+
+#### 📊 Analog Input
+
+##### `ReadAnalogPin()`
+
+```cpp
+double cppDaq::ReadAnalogPin(analog_pin pin)
+```
+
+Reads the voltage from a single analog input.
+
+| | |
+|---------|----------|
+| **Input** | `analog_pin` - Pin identifier |
+| **Output** | Voltage in volts (`double`) |
+| **Precondition** | Pin must be configured in analog pins |
+
+**Example:**
+```cpp
+double voltage = daq.ReadAnalogPin(analog_pin(0));
+```
+
+---
+
+##### `ReadMultipleAnalogPin()`
+
+```cpp
+std::array<double, 1000> cppDaq::ReadMultipleAnalogPin(analog_pin pin)
+```
+
+Acquires 1000 samples from an analog input.
+
+| | |
+|---------|----------|
+| **Input** | `analog_pin` - Pin identifier |
+| **Output** | Array of 1000 voltage samples |
+| **Usage** | Burst acquisition or waveform capture |
+
+**Example:**
+```cpp
+auto samples = daq.ReadMultipleAnalogPin(analog_pin(0));
+double average = std::accumulate(samples.begin(), samples.end(), 0.0) / samples.size();
+```
+
+---
+
+#### 📤 Analog Output
+
+##### `WriteAnalogPin()`
+
+```cpp
+bool cppDaq::WriteAnalogPin(analog_pin pin, double value)
+```
 
 Writes a voltage to an analog output.
 
-- Inputs: analog pin + value in volts.
-- Output: `true` if successful, otherwise `false`.
+| | |
+|---------|----------|
+| **Input** | `analog_pin` - Pin identifier<br>`double` - Voltage value |
+| **Output** | `true` if successful, `false` otherwise |
 
-==== `bool cppDaq::WriteDigitalPin(digital_pin pin, digital_state state)`
+**Example:**
+```cpp
+if (daq.WriteAnalogPin(analog_pin(0), 3.3)) {
+    std::cout << "✅ Voltage set to 3.3V\n";
+}
+```
 
-Writes a logic state to a digital output.
+---
 
-- Inputs: digital pin + state (`LOW`/`HIGH`).
-- Output: `true` if successful, otherwise `false`.
+#### 🔌 Digital Output
 
-==== `bool cppDaq::StartDigitalCounterPWM(digital_pin_continuous pin, Frequency_hz<double> rate)`
+##### `WriteDigitalPin()`
 
-Starts a digital PWM based on hardware counter.
+```cpp
+bool cppDaq::WriteDigitalPin(digital_pin pin, digital_state state)
+```
 
-- Inputs: continuous digital pin + frequency.
-- Output: `true` if start successful.
-- Advantage: better time precision than software PWM.
+Sets a digital pin to HIGH or LOW.
 
-==== `bool cppDaq::StopDigitalCounterPWM()`
+| | |
+|---------|----------|
+| **Input** | `digital_pin` - Pin identifier<br>`digital_state` - `LOW` or `HIGH` |
+| **Output** | `true` if successful, `false` otherwise |
 
-Stops the previously started hardware digital PWM.
+**Example:**
+```cpp
+daq.WriteDigitalPin(digital_pin(0), digital_state::HIGH);
+daq.WriteDigitalPin(digital_pin(1), digital_state::LOW);
+```
 
-- Input: none.
-- Output: `true` if stop successful.
+---
 
-==== `bool cppDaq::StartDigitalSoftwarePWM(digital_pin_continuous pin, Frequency_hz<double> rate)`
+#### 📡 Hardware PWM (Digital)
 
-Starts a software-emulated digital PWM.
+##### `StartDigitalCounterPWM()`
 
-- Inputs: continuous digital pin + frequency.
-- Output: `true` if start successful.
-- Limitation: lower precision than hardware PWM.
+```cpp
+bool cppDaq::StartDigitalCounterPWM(digital_pin_continuous pin, 
+                                     Frequency_hz<double> rate)
+```
 
-==== `bool cppDaq::StopDigitalSoftwarePWM()`
+Starts hardware-based digital PWM using a counter.
 
-Stops the software digital PWM.
+| | |
+|---------|----------|
+| **Input** | `digital_pin_continuous` - Pin identifier<br>`Frequency_hz<double>` - Frequency |
+| **Output** | `true` if started successfully |
+| **Advantage** | ⚡ High precision, hardware-timed |
 
-- Input: none.
-- Output: `true` if stop successful.
+**Example:**
+```cpp
+daq.StartDigitalCounterPWM(digital_pin_continuous(0), Frequency_hz<double>(1000.0));
+```
 
-==== `bool cppDaq::UpdateDigitalSoftwarePWM(Frequency_hz<double> rate)`
+---
 
-Updates the frequency of the already active software digital PWM.
+##### `StopDigitalCounterPWM()`
 
-- Input: new frequency.
-- Output: `true` if update successful.
+```cpp
+bool cppDaq::StopDigitalCounterPWM()
+```
 
-==== `bool cppDaq::StartAnalogPWM(analog_pin_continuous pin, Frequency_hz<double> rate)`
+Stops the active hardware PWM.
 
-Starts a periodic analog output (analog PWM mode).
+| | |
+|---------|----------|
+| **Input** | None |
+| **Output** | `true` if stopped successfully |
 
-- Inputs: continuous analog pin + frequency.
-- Output: `true` if successful.
+---
 
-==== `bool cppDaq::StopAnalogPWM(analog_pin_continuous pin)`
+#### 💻 Software PWM (Digital)
 
-Stops the periodic analog generation on the given pin.
+##### `StartDigitalSoftwarePWM()`
 
-- Input: continuous analog pin.
-- Output: `true` if stop successful.
+```cpp
+bool cppDaq::StartDigitalSoftwarePWM(digital_pin_continuous pin, 
+                                      Frequency_hz<double> rate)
+```
 
-==== `cppDaq::~cppDaq()`
+Starts software-emulated digital PWM.
 
-Destructor: releases internal resources (tasks, handle, memory, etc.).
+| | |
+|---------|----------|
+| **Input** | `digital_pin_continuous` - Pin identifier<br>`Frequency_hz<double>` - Frequency |
+| **Output** | `true` if started successfully |
+| **Note** | ⚠️ Lower precision than hardware PWM |
 
-== C API (`daq_c.h`)
+---
 
-=== Important Warning
+##### `StopDigitalSoftwarePWM()`
 
-The C interface is marked as less safe in the header:
+```cpp
+bool cppDaq::StopDigitalSoftwarePWM()
+```
 
-- no strong types,
-- more limited input validation,
-- recommended usage mainly for ABI/C compatibility.
+Stops the active software PWM.
 
-=== Minimal C Example
+---
 
-[source,c]
-----
+##### `UpdateDigitalSoftwarePWM()`
+
+```cpp
+bool cppDaq::UpdateDigitalSoftwarePWM(Frequency_hz<double> rate)
+```
+
+Updates the frequency of a running software PWM.
+
+| | |
+|---------|----------|
+| **Input** | New frequency |
+| **Output** | `true` if updated successfully |
+| **Note** | Must be called while PWM is active |
+
+---
+
+#### 🌊 Analog PWM
+
+##### `StartAnalogPWM()`
+
+```cpp
+bool cppDaq::StartAnalogPWM(analog_pin_continuous pin, 
+                             Frequency_hz<double> rate)
+```
+
+Starts periodic analog signal generation.
+
+| | |
+|---------|----------|
+| **Input** | `analog_pin_continuous` - Pin identifier<br>`Frequency_hz<double>` - Frequency |
+| **Output** | `true` if started successfully |
+
+---
+
+##### `StopAnalogPWM()`
+
+```cpp
+bool cppDaq::StopAnalogPWM(analog_pin_continuous pin)
+```
+
+Stops the periodic analog generation on the specified pin.
+
+| | |
+|---------|----------|
+| **Input** | `analog_pin_continuous` - Pin identifier |
+| **Output** | `true` if stopped successfully |
+
+---
+
+#### 🧹 Cleanup
+
+##### `~cppDaq()`
+
+```cpp
+cppDaq::~cppDaq()
+```
+
+Destructor that automatically releases all resources.
+
+| | |
+|---------|----------|
+| **Resources** | Tasks, handles, memory allocations |
+| **Note** | Automatically called when object goes out of scope |
+
+---
+
+## ⚙️ C API (`daq_c.h`)
+
+### ⚠️ Important Warning
+
+The C interface provides ABI compatibility but has limitations:
+
+| Limitation | Impact |
+|------------|--------|
+| ❌ No strong types | Less compile-time safety |
+| ❌ Limited validation | Runtime errors more likely |
+| ⚠️ Manual memory management | Risk of leaks if not careful |
+
+**Recommended for**: C projects, FFI (Foreign Function Interface), or legacy system integration.
+
+---
+
+### 📝 Quick Start Example
+
+```c
 #include "daq_c.h"
 #include <stdio.h>
 
 int main(void)
 {
-	char dev[] = "Dev1";
-	int digital_pins[] = {0};
+    // 1. Configure pins
+    char dev[] = "Dev1";
+    int digital_pins[] = {0};
 
-	HDAQ h = create_cppDaq_(
-		dev,
-		0, NULL,
-		1, digital_pins,
-		0, NULL,
-		0, NULL
-	);
+    // 2. Create DAQ instance
+    HDAQ h = create_cppDaq_(
+        dev,
+        0, NULL,           // No analog pins
+        1, digital_pins,   // 1 digital pin (pin 0)
+        0, NULL,           // No continuous analog
+        0, NULL            // No continuous digital
+    );
 
-	if (h == NULL) {
-		printf("Error create_cppDaq_\n");
-		return 1;
-	}
+    // 3. Check creation
+    if (h == NULL) {
+        printf("❌ Error: create_cppDaq_ failed\n");
+        return 1;
+    }
 
-	if (!set_digital_value_(h, 0, 1)) {
-		printf("Error set_digital_value_\n");
-	}
+    // 4. Set digital pin HIGH
+    if (!set_digital_value_(h, 0, 1)) {
+        printf("❌ Error: set_digital_value_ failed\n");
+    } else {
+        printf("✅ Digital pin 0 set to HIGH\n");
+    }
 
-	destroy_cppDaq_(h);
-	return 0;
+    // 5. Cleanup
+    destroy_cppDaq_(h);
+    return 0;
 }
-----
+```
 
-=== Complete C Function Reference
+---
 
-The C functions manipulate an opaque handle `HDAQ` (`void*`).
+### 📖 Complete Function Reference
 
-==== `HDAQ create_cppDaq_(char* device, int analog_count, int* analog_io_id, int digital_count, int* digital_io_id, int analog_co_count, int* analog_co_io_id, int digital_co_count, int* digital_co_io_id)`
+> **Note**: All C functions use an opaque handle `HDAQ` (which is a `void*` pointer).
 
-Creates a DAQ instance and returns a handle.
+---
 
-- `device`: device name (e.g., `Dev1`).
-- `*_count`: number of elements in each array.
-- `*_io_id`: pin index arrays (can be `NULL` if count = 0).
-- Return: valid handle or `NULL` if failed.
+#### 🏗️ Lifecycle Management
 
-==== `int get_status_(HDAQ handle)`
+##### `create_cppDaq_()`
 
-Returns the current status of the instance.
+```c
+HDAQ create_cppDaq_(
+    char* device,
+    int analog_count,
+    int* analog_io_id,
+    int digital_count,
+    int* digital_io_id,
+    int analog_co_count,
+    int* analog_co_io_id,
+    int digital_co_count,
+    int* digital_co_io_id
+)
+```
 
-- Return: integer code corresponding to `DAQ_STATUS`.
+Creates a DAQ instance and returns an opaque handle.
 
-Code mapping:
+| Parameter | Description |
+|-----------|-------------|
+| `device` | Device name (e.g., `"Dev1"`) |
+| `analog_count` | Number of analog pins |
+| `analog_io_id` | Array of analog pin IDs (or `NULL` if count = 0) |
+| `digital_count` | Number of digital pins |
+| `digital_io_id` | Array of digital pin IDs (or `NULL` if count = 0) |
+| `analog_co_count` | Number of continuous analog pins |
+| `analog_co_io_id` | Array of continuous analog pin IDs |
+| `digital_co_count` | Number of continuous digital pins |
+| `digital_co_io_id` | Array of continuous digital pin IDs |
+| **Returns** | Valid `HDAQ` handle or `NULL` on failure |
 
-- `0`: `NO_ERR`
-- `1`: `INPUTS_NOT_VALID`
-- `2`: `DAQ_RETRIEVE_NAME_FAIL`
-- `3`: `DAQ_TEST_DEVICE_FAIL`
-- `4`: `DAQ_NAME_EMPTY`
-- `5`: `ERR_CREATE_IO_FAIL`
-- `6`: `DAQ_NOT_INITIALIZED`
+**Example:**
+```c
+int analog_pins[] = {0, 1};
+int digital_pins[] = {0};
 
-==== `double get_analog_value_(HDAQ daq, int pin)`
+HDAQ h = create_cppDaq_(
+    "Dev1",
+    2, analog_pins,    // 2 analog pins
+    1, digital_pins,   // 1 digital pin
+    0, NULL,           // No continuous analog
+    0, NULL            // No continuous digital
+);
+```
 
-Reads the analog value of a pin.
+---
 
-- Inputs: handle + pin index.
-- Output: voltage (`double`).
+##### `destroy_cppDaq_()`
 
-==== `bool set_digital_value_(HDAQ handle, int pin, int state)`
+```c
+bool destroy_cppDaq_(HDAQ handle)
+```
 
-Writes a digital value.
+Destroys the DAQ instance and releases all resources.
 
-- `state`: `0` = LOW, `1` = HIGH.
-- Return: `true` if successful.
+| | |
+|---------|----------|
+| **Input** | `HDAQ` handle |
+| **Returns** | `true` if successful |
+| **Note** | ⚠️ **Always call** at the end of usage to prevent memory leaks |
 
-==== `bool set_analog_value_(HDAQ handle, int pin, double value)`
+---
 
-Writes an analog voltage.
+#### ⚡ Status Checking
 
-- Inputs: handle + pin + voltage.
-- Return: `true` if successful.
+##### `get_status_()`
 
-==== `bool start_digital_pulse_(HDAQ handle, int pin, int frequency)`
+```c
+int get_status_(HDAQ handle)
+```
 
-Starts a hardware digital PWM (counter).
+Returns the current status code of the DAQ instance.
 
-- `frequency`: frequency in Hz.
-- Return: `true` if successful.
+**Status Code Mapping:**
 
-==== `bool stop_digital_pulse_(HDAQ handle)`
+| Code | Status Constant | Meaning |
+|------|-----------------|---------|
+| `0` | `NO_ERR` | ✅ Normal operation |
+| `1` | `INPUTS_NOT_VALID` | ❌ Invalid input parameters |
+| `2` | `DAQ_RETRIEVE_NAME_FAIL` | ❌ Failed to retrieve device name |
+| `3` | `DAQ_TEST_DEVICE_FAIL` | ❌ Device test failed |
+| `4` | `DAQ_NAME_EMPTY` | ❌ Empty device name |
+| `5` | `ERR_CREATE_IO_FAIL` | ❌ I/O creation failed |
+| `6` | `DAQ_NOT_INITIALIZED` | ❌ DAQ not initialized |
+
+**Example:**
+```c
+int status = get_status_(h);
+if (status != 0) {
+    printf("DAQ error: %d\n", status);
+}
+```
+
+---
+
+#### 📊 Analog Operations
+
+##### `get_analog_value_()`
+
+```c
+double get_analog_value_(HDAQ daq, int pin)
+```
+
+Reads the voltage from an analog input pin.
+
+| | |
+|---------|----------|
+| **Input** | `HDAQ` handle, pin index |
+| **Returns** | Voltage in volts (`double`) |
+
+**Example:**
+```c
+double voltage = get_analog_value_(h, 0);
+printf("Analog pin 0: %.2f V\n", voltage);
+```
+
+---
+
+##### `set_analog_value_()`
+
+```c
+bool set_analog_value_(HDAQ handle, int pin, double value)
+```
+
+Writes a voltage to an analog output pin.
+
+| | |
+|---------|----------|
+| **Input** | `HDAQ` handle, pin index, voltage value |
+| **Returns** | `true` if successful |
+
+**Example:**
+```c
+if (set_analog_value_(h, 0, 3.3)) {
+    printf("✅ Set analog pin 0 to 3.3V\n");
+}
+```
+
+---
+
+#### 🔌 Digital Operations
+
+##### `set_digital_value_()`
+
+```c
+bool set_digital_value_(HDAQ handle, int pin, int state)
+```
+
+Writes a digital state to a pin.
+
+| | |
+|---------|----------|
+| **Input** | `HDAQ` handle, pin index, state (`0` = LOW, `1` = HIGH) |
+| **Returns** | `true` if successful |
+
+**Example:**
+```c
+set_digital_value_(h, 0, 1);  // Set HIGH
+set_digital_value_(h, 1, 0);  // Set LOW
+```
+
+---
+
+#### 📡 Hardware PWM (Digital)
+
+##### `start_digital_pulse_()`
+
+```c
+bool start_digital_pulse_(HDAQ handle, int pin, int frequency)
+```
+
+Starts hardware-based digital PWM.
+
+| | |
+|---------|----------|
+| **Input** | `HDAQ` handle, pin index, frequency in Hz |
+| **Returns** | `true` if started successfully |
+
+**Example:**
+```c
+start_digital_pulse_(h, 0, 1000);  // 1 kHz PWM
+```
+
+---
+
+##### `stop_digital_pulse_()`
+
+```c
+bool stop_digital_pulse_(HDAQ handle)
+```
 
 Stops the hardware digital PWM.
 
-- Return: `true` if successful.
+---
 
-==== `bool start_digital_software_pulse_(HDAQ handle, int pin, int frequency)`
+#### 💻 Software PWM (Digital)
 
-Starts a software-emulated digital PWM.
+##### `start_digital_software_pulse_()`
 
-- Return: `true` if successful.
+```c
+bool start_digital_software_pulse_(HDAQ handle, int pin, int frequency)
+```
 
-==== `bool stop_digital_software_pulse_(HDAQ handle)`
+Starts software-emulated digital PWM.
+
+| | |
+|---------|----------|
+| **Note** | ⚠️ Lower precision than hardware PWM |
+
+---
+
+##### `stop_digital_software_pulse_()`
+
+```c
+bool stop_digital_software_pulse_(HDAQ handle)
+```
 
 Stops the software digital PWM.
 
-- Return: `true` if successful.
+---
 
-==== `bool update_digital_software_pulse_(HDAQ handle, int frequency)`
+##### `update_digital_software_pulse_()`
 
-Updates the frequency of the software digital PWM.
+```c
+bool update_digital_software_pulse_(HDAQ handle, int frequency)
+```
 
-- Return: `true` if successful.
+Updates the frequency of an active software PWM.
 
-==== `bool start_analog_pulse_(HDAQ handle, int pin, int frequency)`
+| | |
+|---------|----------|
+| **Input** | `HDAQ` handle, new frequency in Hz |
+| **Returns** | `true` if successful |
 
-Starts a periodic analog signal on the indicated pin.
+---
 
-- Return: `true` if successful.
+#### 🌊 Analog PWM
 
-==== `bool stop_analog_pulse_(HDAQ handle, int pin)`
+##### `start_analog_pulse_()`
 
-Stops the periodic analog signal on the indicated pin.
+```c
+bool start_analog_pulse_(HDAQ handle, int pin, int frequency)
+```
 
-- Return: `true` if successful.
+Starts periodic analog signal generation.
 
-==== `bool destroy_cppDaq_(HDAQ handle)`
+| | |
+|---------|----------|
+| **Input** | `HDAQ` handle, pin index, frequency in Hz |
+| **Returns** | `true` if successful |
 
-Destroys the instance associated with the handle and releases resources.
+---
 
-- Always call this function at the end of usage.
+##### `stop_analog_pulse_()`
 
-== Best Practices
+```c
+bool stop_analog_pulse_(HDAQ handle, int pin)
+```
 
-- Prefer the C++ API (`cppDaq`) for type safety.
-- Systematically verify the status (`GetStatus()` or `get_status_()`) after creation.
-- Verify the `bool` return values of all write/PWM operations.
-- Explicitly stop PWMs before destroying the handle/object.
+Stops the periodic analog signal on the specified pin.
+
+| | |
+|---------|----------|
+| **Input** | `HDAQ` handle, pin index |
+| **Returns** | `true` if successful |
+
+---
+
+## ✅ Best Practices
+
+### General Recommendations
+
+| Practice | Reason |
+|----------|--------|
+| ✅ **Prefer C++ API** | Type safety prevents common errors at compile-time |
+| ✅ **Check status after creation** | Use `GetStatus()` or `get_status_()` immediately |
+| ✅ **Verify return values** | All write/PWM operations return `bool` - check them! |
+| ✅ **Stop PWMs before cleanup** | Explicitly stop all PWM signals before destroying DAQ |
+| ✅ **Use `DaqConfig`** | Modern fluent API is clearer than old constructor |
+
+---
+
+### Error Handling Pattern (C++)
+
+```cpp
+// ✅ Good: Always check status
+cppDaq daq(config);
+if (daq.GetStatus() != DAQ_STATUS::NO_ERR) {
+    std::cerr << "Initialization failed\n";
+    return;
+}
+
+// ✅ Good: Verify write operations
+if (!daq.WriteDigitalPin(digital_pin(0), digital_state::HIGH)) {
+    std::cerr << "Failed to write digital pin\n";
+}
+```
+
+---
+
+### Resource Management Pattern (C)
+
+```c
+// ✅ Good: Always cleanup
+HDAQ h = create_cppDaq_(...);
+if (h == NULL) {
+    return 1;
+}
+
+// ... use DAQ ...
+
+// Stop PWM before destroying
+stop_digital_pulse_(h);
+
+// Always destroy
+destroy_cppDaq_(h);
+```
+
+---
+
+### PWM Management
+
+```cpp
+// ✅ Good: Stop before switching modes
+daq.StopDigitalCounterPWM();
+daq.StartDigitalSoftwarePWM(digital_pin_continuous(0), Frequency_hz<double>(500.0));
+
+// ✅ Good: Stop before destruction
+daq.StopDigitalSoftwarePWM();
+// Destructor will run automatically
+```
+
+---
+
+## 📞 Support
+
+For issues, questions, or contributions, please refer to the project repository.
+
+---
+
+**Made with ❤️ for NI DAQ automation**
