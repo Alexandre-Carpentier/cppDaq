@@ -11,25 +11,7 @@ cmake_minimum_required(VERSION 3.20)
 set(CMAKE_CXX_STANDARD 23)
 
 # Project to make a wrapper over daq librairies
-project(DataAcquisitionProject)
-
-# Set the current base folder here with abs path: ex C:\\...\\taget_folder, ex C:/.../taget_folder,...
-if(EXISTS "C:/DEV/cppDaq")
-set(MY_ROOT "C:/DEV/cppDaq")
-message("[*] We are at IRAM.")
-endif()
-
-if(EXISTS "G:/CODE/cppDaq")
-set(MY_ROOT "G:/CODE/cppDaq")
-message("[*] We are at Home.")
-endif()
-
-if(EXISTS "/Users/alex/Desktop/01-Code/cppDaq")
-set(MY_ROOT "/Users/alex/Desktop/01-Code/cppDaq")
-message("[*] We are flying on Macbook air.")
-endif()
-
-message("[*] Root folder: ${MY_ROOT}")
+project(cppDaqRoot)
 
 # Determine the current target arch
 if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
