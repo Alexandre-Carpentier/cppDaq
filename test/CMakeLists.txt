@@ -19,10 +19,10 @@ enable_testing()
 add_subdirectory(googletest)
 
 #create executable
-include_directories("${MY_ROOT}/app/src/")
-include_directories("${MY_ROOT}/app/src/driver/ni_daqmx_driver/")
-include_directories("${MY_ROOT}/dep/daqmx/include/")
-include_directories("${MY_ROOT}/dep/daqmx/googletest/")
+include_directories("${CMAKE_SOURCE_DIR}/app/src/")
+include_directories("${CMAKE_SOURCE_DIR}/app/src/driver/ni_daqmx_driver/")
+include_directories("${CMAKE_SOURCE_DIR}/dep/daqmx/include/")
+include_directories("${CMAKE_SOURCE_DIR}/dep/daqmx/googletest/")
 
 #add_executable(test_api "main.cpp" "test.h" "test.cpp" "example.h" "example.cpp")
 add_executable(run_test  "test.cpp" )

@@ -21,7 +21,7 @@ file(GLOB_RECURSE APPSRC *.cpp *.h)
 
 include_directories(src)
 include_directories(src/driver/ni_daqmx_driver/)
-include_directories("${MY_ROOT}/dep/daqmx/include/")
+include_directories("${CMAKE_SOURCE_DIR}/dep/daqmx/include/")
 
 ##########################################################################
 # Build a library .lib
@@ -34,7 +34,7 @@ if(APPLE)
 message("[*] " ${PROJECT_NAME} " target Apple Silicon includes")
 elseif(WIN32)
 message("[*] " ${PROJECT_NAME} " target Windows daqmx includes")
-target_include_directories(cppDaqStatic PUBLIC "${MY_ROOT}/dep/daqmx/include/")
+target_include_directories(cppDaqStatic PUBLIC "${CMAKE_SOURCE_DIR}/dep/daqmx/include/")
 endif()
 # Librairie link correct static lib arch
 if(IAM_64BIT)
@@ -47,8 +47,8 @@ message("[*] " ${PROJECT_NAME} " target Windows lib")
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 message("[*] " ${PROJECT_NAME} " arch is 64bit")
-message("${MY_ROOT}/dep/daqmx/lib64/msvc/NIDAQmx.lib")
-target_link_libraries(cppDaqStatic PUBLIC "${MY_ROOT}/dep/daqmx/lib64/msvc/NIDAQmx.lib")
+message("[*] Current NI libraries path is: ${CMAKE_SOURCE_DIR}/dep/daqmx/lib64/msvc/NIDAQmx.lib")
+target_link_libraries(cppDaqStatic PUBLIC "${CMAKE_SOURCE_DIR}/dep/daqmx/lib64/msvc/NIDAQmx.lib")
 endif()
 
 endif()
@@ -58,7 +58,7 @@ endif()
 if(IAM_32BIT)
 message("[*] " ${PROJECT_NAME} " arch is 32bit")
 if(CMAKE_SIZEOF_VOID_P EQUAL 4)
-target_link_libraries(cppDaqStatic PUBLIC "${MY_ROOT}/dep/daqmx/lib32/msvc/NIDAQmx.lib")
+target_link_libraries(cppDaqStatic PUBLIC "${CMAKE_SOURCE_DIR}/dep/daqmx/lib32/msvc/NIDAQmx.lib")
 endif()
 endif()
 
@@ -73,7 +73,7 @@ if(APPLE)
 message("[*] daq target Apple Silicon includes")
 elseif(WIN32)
 message("[*] daq target Windows daqmx includes")
-target_include_directories(cppDaq PUBLIC "${MY_ROOT}/dep/daqmx/include/")
+target_include_directories(cppDaq PUBLIC "${CMAKE_SOURCE_DIR}/dep/daqmx/include/")
 endif()
 
 # Shared link correct static lib arch
@@ -83,14 +83,14 @@ if(APPLE)
 message("[*] daq target Apple Silicon lib")
 elseif(WIN32)
 message("[*] daq target 64bit arch")
-target_link_libraries(cppDaq PUBLIC "${MY_ROOT}/dep/daqmx/lib64/msvc/NIDAQmx.lib")
+target_link_libraries(cppDaq PUBLIC "${CMAKE_SOURCE_DIR}/dep/daqmx/lib64/msvc/NIDAQmx.lib")
 endif()
 
 endif()
 
 if(IAM_32BIT)
 message("[*] daq target 32bit arch")
-target_link_libraries(cppDaq PUBLIC "${MY_ROOT}/dep/daqmx/lib32/msvc/NIDAQmx.lib")
+target_link_libraries(cppDaq PUBLIC "${CMAKE_SOURCE_DIR}/dep/daqmx/lib32/msvc/NIDAQmx.lib")
 endif()
 message("[*] " ${PROJECT_NAME}"Built.")
 
