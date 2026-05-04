@@ -40,7 +40,6 @@ add_executable(run_example11 "example11-c-api-create-destroy-cycling.cpp")
 add_executable(run_example12 "example-12-cpp-api-double-free.cpp")
 add_executable(run_example13 "example13-c-api-double-free.cpp")
 
-
 # Link correct static lib arch
 if(IAM_64BIT)
 message("[*] " ${PROJECT_NAME} "target 64bit arch")
