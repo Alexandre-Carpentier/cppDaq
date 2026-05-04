@@ -145,11 +145,16 @@ public:
     // Analog PWM control
     [[nodiscard]] bool StartAnalogPWM(analog_pin_continuous pin, Frequency_hz<double> rate); 
     bool StopAnalogPWM(analog_pin_continuous pin); 
+
+    bool resetDaq();
     ~cppDaq();
 
 private:
+    //Opaque ptr
     class cppDaqimpl; 
     std::unique_ptr<cppDaqimpl> pdaq;
+
+    DaqConfig m_config;
     DAQ_STATUS status;
 };
 
