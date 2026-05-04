@@ -930,6 +930,8 @@ cppDaq::cppDaq(const DaqConfig& config)
 bool cppDaq::resetDaq()
 {
 	pdaq->~cppDaqimpl();
+    std::print(CYN"[!] resetDaq() called.\n");
+    std::print(NC);
 	pdaq = std::make_unique<cppDaqimpl>(this, m_config.device, m_config.analog, m_config.digital, m_config.analog_continuous, m_config.digital_continuous);
     return true;
 }
