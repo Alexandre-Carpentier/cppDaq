@@ -35,8 +35,8 @@
 {
 
     dbg::print("[*] Digital write\n");
-    static TaskHandle s_lastTaskHandle { 0 };
-    static uInt8 s_last_cmd[1] = {0};
+    //static TaskHandle s_lastTaskHandle { 0 };
+    //static uInt8 s_last_cmd[1] = {0};
     uInt8 cmd[1];
 
     if (state == digital_state::HIGH)
@@ -48,16 +48,16 @@
         cmd[0] = 0;
     }
 
-    // Prevent calling again
-    if(cmd[0] == s_last_cmd[0])
-    {
-        if (digital_task_handle == s_lastTaskHandle)
-        {
-            // No change
-            return true;
-        }
-    }
-    s_last_cmd[0] = cmd[0];
+    //// Prevent calling again
+    //if(cmd[0] == s_last_cmd[0])
+    //{
+    //    if (digital_task_handle == s_lastTaskHandle)
+    //    {
+    //        // No change
+    //        return true;
+    //    }
+    //}
+    //s_last_cmd[0] = cmd[0];
 
     if (!digital_task_handle)
     {
