@@ -78,7 +78,7 @@ struct DaqConfig
     }
 
     DaqConfig& setDevice(std::string dev) {
-        device = std::move(dev);
+        device = dev;
         return *this;
     }
 

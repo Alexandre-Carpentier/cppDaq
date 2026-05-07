@@ -27,8 +27,7 @@ int main()
 
 	DaqConfig config;
 
-	config.setDevice("Dev1") 
-		.setDigitalPins(digital_pins{ A1_PIN }); // Level sent to the driver at 3.3V
+	config.setDevice("Dev1") .setDigitalPins(digital_pins{ A1_PIN }); // Level sent to the driver at 3.3V
 
 	std::unique_ptr<cppDaq> m_daq = std::make_unique<cppDaq>(config);
 	assert(m_daq); // Ensure DAQ is initialized correctly

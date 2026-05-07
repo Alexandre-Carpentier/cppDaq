@@ -47,7 +47,9 @@ double daqmxCreateDigital::read(pin_t digital_io_id)
 
 bool daqmxCreateDigital::write(pin_t digital_io_id, digital_state state)
 {
-    TaskHandle task = m_digital_task_handle[digital_io_id.get()];
+    //TaskHandle task = m_digital_task_handle[digital_io_id.get()];
+    // Error indice = 1 when 1 pin.
+    TaskHandle task = m_digital_task_handle[0];
     auto result = std::visit([&task, &state](auto&& arg) {return arg.write(task, state);
         }, wr
     );
