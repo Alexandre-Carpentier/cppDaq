@@ -615,11 +615,12 @@ public:
         }
 
         io io_ = get_io_from_ios(ios, IO_TYPE::dig);
+        size_t pos = pin_to_vec_pos(pin, m_digital_io_id);// Find pin pos in vec
 
         task_mutex.lock();
-        auto result = std::visit([&pin, &state](auto&& arg) -> bool
+        auto result = std::visit([&pos, &state](auto&& arg) -> bool
             {
-                return arg.write(pin, state);
+                return arg.write(pin_t(pos), state);
             }, io_);
         task_mutex.unlock();
 
@@ -818,10 +819,11 @@ private:
 
         io_co io_co_ = get_io_from_ios(ios_co, IO_TYPE::ana_co);
 
+        pin_t task_index(pin_to_vec_pos(pin, m_analog_co_io_id));
         task_mutex.lock();
-        auto result = std::visit([&pin, &rate](auto&& arg) -> bool
+        auto result = std::visit([&task_index, &rate](auto&& arg) -> bool
             {
-                return arg.write(pin, rate);
+                return arg.write(task_index, rate);
             }, io_co_);
         task_mutex.unlock();
 
@@ -859,10 +861,12 @@ private:
 
         io_co io_co_ = get_io_from_ios(ios_co, IO_TYPE::dig_co);
 
+        pin_t task_index(pin_to_vec_pos(digital_io_id_co, m_digital_co_io_id));
+
         task_mutex.lock();
-        auto result = std::visit([&digital_io_id_co, &rate](auto&& arg) -> bool
+        auto result = std::visit([&task_index, &rate](auto&& arg) -> bool
             {
-                return arg.write(digital_io_id_co, rate);
+                return arg.write(task_index, rate);
             }, io_co_);
         task_mutex.unlock();
 

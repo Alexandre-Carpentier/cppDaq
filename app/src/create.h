@@ -31,9 +31,11 @@ class CreateAnalog {
 public:
     CreateAnalog(const std::string device_name, analog_pins analog_io_id)
 #ifndef __aarch64__
+        // WINDOWS and LINUX
         : analog{ device_name, analog_io_id }
 #endif
     {
+        // APPLE SILICON
     }
     double read(pin_t analog_io_id)
     {

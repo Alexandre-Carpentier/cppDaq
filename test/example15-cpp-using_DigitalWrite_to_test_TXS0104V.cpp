@@ -20,7 +20,6 @@
 
 digital_pin A1_PIN{ 2 };				// P0.0 → R208 DB9 Pin 4 : Motor enable (HIGH = active)
 
-
 int main()
 {
 	std::print("[*] Connecting to DAQ\n");
