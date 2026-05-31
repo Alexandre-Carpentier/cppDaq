@@ -20,7 +20,7 @@ extern "C" {
 #endif
 
 // This is the C interface
-// This interface IS unsafe. No check on the inputs is done. Use at your own risk.
+// This interface is unsafe. No check on the inputs is done. Use at your own risk.
 // For strong type implementations and safety use the cpp interface.
 // This header only provide ABI compatibility and is considered deprecated for new dev.
 
