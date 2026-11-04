@@ -585,7 +585,7 @@ public:
 
     //
 
-    bool set_digital_value(digital_pin pin, digital_state state)
+    bool set_digital_value(digital_pin pin, double value)
     {
         if (!use_digital)
         {
@@ -618,9 +618,9 @@ public:
         size_t pos = pin_to_vec_pos(pin, m_digital_io_id);// Find pin pos in vec
 
         task_mutex.lock();
-        auto result = std::visit([&pos, &state](auto&& arg) -> bool
+        auto result = std::visit([&pos, &value](auto&& arg) -> bool
             {
-                return arg.write(pin_t(pos), state);
+                return arg.write(pin_t(pos), value);
             }, io_);
         task_mutex.unlock();
 
@@ -679,8 +679,36 @@ public:
 #endif
             return false;
         }
-        std::print("[!] Not yet impl.\n");
-        return true;
+        if (!is_io_available(ios, IO_TYPE::ana))
+        {
+#ifdef _WIN32
+            std::string msg = std::format("set_analog_value() fails, analog io not available\n");
+            MessageBox(0, msg.c_str(), "Info", MB_ICONINFORMATION | S_OK);
+#endif
+            return false;
+        }
+
+        if (!is_io_registered(pin, m_analog_io_id))
+        {
+            std::print("[!] IO PIN is not valid\n");
+#ifdef _WIN32
+            std::string msg = std::format("set_analog_value() fails, analog io not registered\n");
+            MessageBox(0, msg.c_str(), "Info", MB_ICONINFORMATION | S_OK);
+#endif
+            return false;
+        }
+
+        io io_ = get_io_from_ios(ios, IO_TYPE::ana);
+        size_t pos = pin_to_vec_pos(pin, m_analog_io_id);// Find pin pos in vec
+
+        task_mutex.lock();
+        auto result = std::visit([&pos, &value](auto&& arg) -> bool
+            {
+                return arg.write(pin_t(pos), value);
+            }, io_);
+        task_mutex.unlock();
+
+        return result;
     }
 
     bool start_analog_pulse(analog_pin_continuous pin, Frequency_hz<double> rate)
@@ -1011,7 +1039,7 @@ std::array<double, 1000> cppDaq::ReadMultipleAnalogPin(analog_pin pin)
 //
 
 // Forwarder
-bool cppDaq::WriteDigitalPin(digital_pin pin, digital_state state)
+bool cppDaq::WriteDigitalPin(digital_pin pin, double value)
 {
     if (!pdaq)
     {
@@ -1022,7 +1050,7 @@ bool cppDaq::WriteDigitalPin(digital_pin pin, digital_state state)
     {
         return false;
     }
-    return pdaq->set_digital_value(pin, state);
+    return pdaq->set_digital_value(pin, value);
 }
 
 // Forwarder

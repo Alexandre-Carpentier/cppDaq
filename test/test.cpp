@@ -451,9 +451,9 @@ TEST(test_api, test19)
 
 	if (daq.GetStatus() == DAQ_STATUS::NO_ERR)
 	{
-		bool res = daq.WriteDigitalPin(di0, digital_state::HIGH);
+		bool res = daq.WriteDigitalPin(di0, 1.0);
 		EXPECT_TRUE(res);
-		res = daq.WriteDigitalPin(di0, digital_state::LOW);
+		res = daq.WriteDigitalPin(di0, 0.0);
 		EXPECT_TRUE(res);
 	}
 }
@@ -595,24 +595,24 @@ TEST(test_api, test26_using_multiple_DIGITAL_inputs)
 
 	if (daq.GetStatus() == DAQ_STATUS::NO_ERR)
 	{
-		bool res = daq.WriteDigitalPin(di0, digital_state::HIGH);
-		res = daq.WriteDigitalPin(di1, digital_state::HIGH);
+		bool res = daq.WriteDigitalPin(di0, 1.0);
+		res = daq.WriteDigitalPin(di1, 1.0);
 		std::print("[*] Check Digital pin 0 and 1 for logic level: 0=H 1=H. Then press any key to continue.");
 		system("pause");
-		res = daq.WriteDigitalPin(di0, digital_state::LOW);
-		res = daq.WriteDigitalPin(di1, digital_state::LOW);
+		res = daq.WriteDigitalPin(di0, 0.0);
+		res = daq.WriteDigitalPin(di1, 0.0);
 		std::print("[*] Check Digital pin 0 and 1 for logic level: 0=L 1=L. Then press any key to continue.");
 		system("pause");
-		res = daq.WriteDigitalPin(di0, digital_state::HIGH);
-		res = daq.WriteDigitalPin(di1, digital_state::LOW);
+		res = daq.WriteDigitalPin(di0, 1.0);
+		res = daq.WriteDigitalPin(di1, 0.0);
 		std::print("[*] Check Digital pin 0 and 1 for logic level: 0=H 1=L. Then press any key to continue.");
 		system("pause");
-		res = daq.WriteDigitalPin(di1, digital_state::LOW);
-		res = daq.WriteDigitalPin(di0, digital_state::HIGH);
+		res = daq.WriteDigitalPin(di1, 0.0);
+		res = daq.WriteDigitalPin(di0, 1.0);
 		std::print("[*] Check Digital pin 0 and 1 for logic level: 0=H 1=L. Then press any key to continue.");
 		system("pause");
-		res = daq.WriteDigitalPin(di1, digital_state::HIGH);
-		res = daq.WriteDigitalPin(di0, digital_state::LOW);
+		res = daq.WriteDigitalPin(di1, 1.0);
+		res = daq.WriteDigitalPin(di0, 0.0);
 		std::print("[*] Check Digital pin 0 and 1 for logic level: 0=L 1=H. Then press any key to continue.");
 		system("pause");
 	}		

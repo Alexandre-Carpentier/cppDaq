@@ -45,7 +45,7 @@ public:
 
     [[nodiscard]] double read(pin_t analog_io_id);
 
-    bool write(pin_t analog_io_id, digital_state state);
+    bool write(pin_t analog_io_id, double voltage);
 
     void close();
 

@@ -22,9 +22,9 @@ void pulse(cppDaq *daq6001)
 
 	while (!st.stop_requested())
 	{
-		daq6001->WriteDigitalPin(digital_pin(1), digital_state::HIGH);
+		daq6001->WriteDigitalPin(digital_pin(1), 1.0);
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
-		daq6001->WriteDigitalPin(digital_pin(1), digital_state::LOW);
+		daq6001->WriteDigitalPin(digital_pin(1), 0.0);
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	}
 }
@@ -52,13 +52,13 @@ int main()
 
 	// Digital pin High
 
-	bool success = daq6001.WriteDigitalPin(di0, digital_state::HIGH);
+	bool success = daq6001.WriteDigitalPin(di0, 1.0);
 	if (!success)
 	{
 		std::print(RED"[!] Failed to set digital pin\n");
 		std::println(NC);
 	}
-	success = daq6001.WriteDigitalPin(di1, digital_state::HIGH);
+	success = daq6001.WriteDigitalPin(di1, 1.0);
 	if (!success)
 	{
 		std::print(RED"[!] Failed to set digital pin\n");

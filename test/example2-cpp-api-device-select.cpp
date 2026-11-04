@@ -40,7 +40,7 @@ int main()
 
 	// Digital pin High
 
-	bool success = daq6501.WriteDigitalPin(di0, digital_state::HIGH);
+	bool success = daq6501.WriteDigitalPin(di0, 1.0);
 	if (!success)
 	{
 		std::print(RED"[!] Failed to set digital pin\n");

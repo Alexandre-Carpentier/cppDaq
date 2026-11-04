@@ -45,11 +45,11 @@ public:
 #endif
         return res;
     }
-    bool write(pin_t analog_io_id, digital_state state)
+    bool write(pin_t analog_io_id, double value)
     {
         bool res = false;
 #ifndef __aarch64__
-        res = analog.write(analog_io_id, state);
+        res = analog.write(analog_io_id, value);
 #endif
         return res;
     }
@@ -106,11 +106,11 @@ public:
 #endif
         return res;
     }
-    bool write(pin_t digital_io_id, digital_state state)
+    bool write(pin_t digital_io_id, double value)
     {
         bool res = false;
 #ifndef __aarch64__
-        res = digital.write(digital_io_id, state);
+        res = digital.write(digital_io_id, value);
 #endif
         return res;
     }

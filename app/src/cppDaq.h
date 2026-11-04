@@ -132,7 +132,7 @@ public:
     bool WriteAnalogPin(analog_pin pin, double value); 
 
     // Digital I/O operations
-    bool WriteDigitalPin(digital_pin pin, digital_state state); 
+    bool WriteDigitalPin(digital_pin pin, double value); 
 
     // Digital PWM control
     [[nodiscard]] bool StartDigitalCounterPWM(digital_pin_continuous pin, Frequency_hz<double> rate); 

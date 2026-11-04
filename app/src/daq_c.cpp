@@ -83,21 +83,19 @@ bool set_digital_value_(HDAQ handle, int io_id, int state) // Set pin to HIGH or
 	}
 	DAQ* impl = (DAQ*)handle;
 
-	digital_state state_safe = digital_state::LOW;
-	switch (state)
+	double state_ = 0.0;
+	if (state == 0)
 	{
-	case 0:
-		state_safe = digital_state::LOW;
-		break;
-	case 1:
-		state_safe = digital_state::HIGH;
-		break;
-	default:
-		state_safe = digital_state::LOW;
+		state_ = 0.0;
+
+	}
+	else
+	{
+		state_ = 1.0;
 	}
 
 	digital_pin pin(io_id);
-	return impl->m_daq->WriteDigitalPin(pin, state_safe); // Forward
+	return impl->m_daq->WriteDigitalPin(pin, state_); // Forward
 }
 
 bool set_analog_value_(HDAQ handle, int pin, double value)

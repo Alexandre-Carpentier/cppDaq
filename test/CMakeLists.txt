@@ -41,6 +41,7 @@ add_executable(run_example12 "example-12-cpp-api-double-free.cpp")
 add_executable(run_example13 "example13-c-api-double-free.cpp")
 add_executable(run_example14 "example14-cpp-using_DigitalWrite_AnalogWriteCo.cpp")
 add_executable(run_example15 "example15-cpp-using_DigitalWrite_to_test_TXS0104V.cpp")
+add_executable(run_example16 "example16-cpp-using-Tecniwave switch.cpp")
 
 # Link correct static lib arch
 if(IAM_64BIT)
@@ -77,6 +78,7 @@ target_link_libraries(run_example12 PRIVATE cppDaqStatic gtest_main)
 target_link_libraries(run_example13 PRIVATE cppDaqStatic gtest_main)
 target_link_libraries(run_example14 PRIVATE cppDaqStatic gtest_main)
 target_link_libraries(run_example15 PRIVATE cppDaqStatic gtest_main)
+target_link_libraries(run_example16 PRIVATE cppDaqStatic gtest_main)
 
 # Add google test
 add_test(

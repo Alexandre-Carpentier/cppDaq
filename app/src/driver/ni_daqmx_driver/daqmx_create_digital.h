@@ -34,7 +34,7 @@ public:
 
     [[nodiscard]] double read(pin_t digital_io_id);
 
-    bool write(pin_t digital_io_id, digital_state state);
+    bool write(pin_t digital_io_id, double value);
 
     void close();
 

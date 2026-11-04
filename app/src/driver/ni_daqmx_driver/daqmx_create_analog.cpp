@@ -46,7 +46,7 @@ double daqmxCreateAnalog::read(pin_t analog_io_id)
     return result;
 }
 
-bool daqmxCreateAnalog::write(pin_t analog_io_id, digital_state state)
+bool daqmxCreateAnalog::write(pin_t analog_io_id, double voltage)
 {
     std::print("[!] daqmxCreateAnalog::write() Not yet implemented\n");
 #ifdef _WIN32

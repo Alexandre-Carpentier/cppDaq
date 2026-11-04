@@ -31,11 +31,11 @@ int main()
 	std::unique_ptr<cppDaq> m_daq = std::make_unique<cppDaq>(config);
 	assert(m_daq); // Ensure DAQ is initialized correctly
 
-	m_daq->WriteDigitalPin(A1_PIN, digital_state::HIGH); // 3.3V
+	m_daq->WriteDigitalPin(A1_PIN, 1.0); // 3.3V
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
-	m_daq->WriteDigitalPin(A1_PIN, digital_state::LOW); // 0.0V
+	m_daq->WriteDigitalPin(A1_PIN, 0.0); // 0.0V
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 

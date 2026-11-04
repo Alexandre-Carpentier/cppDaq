@@ -20,7 +20,7 @@
 
 #ifndef __aarch64__
 // Sim mock
-[[nodiscard]] bool cDigitalWriteSim::write(TaskHandle m_digital_task_handle, digital_state state)
+[[nodiscard]] bool cDigitalWriteSim::write(TaskHandle m_digital_task_handle, double value)
 {
     std::print("[*] Digital write sim\n");
 #ifdef _WIN32
@@ -31,7 +31,7 @@
 }
 
 // Real impl
-[[nodiscard]] bool cDigitalWrite::write(TaskHandle digital_task_handle, digital_state state)
+[[nodiscard]] bool cDigitalWrite::write(TaskHandle digital_task_handle, double value)
 {
 
     dbg::print("[*] Digital write\n");
@@ -39,7 +39,7 @@
     //static uInt8 s_last_cmd[1] = {0};
     uInt8 cmd[1];
 
-    if (state == digital_state::HIGH)
+    if (value > 0.0)
     {
         cmd[0] = 1;
     }
@@ -82,7 +82,7 @@
 }
 
 // Real impl
-[[nodiscard]] bool cDigitalDaqWriteCO::write(TaskHandle digital_task_handle, Frequency_hz<double> rate)
+[[nodiscard]] bool cDigitalWriteCO::write(TaskHandle digital_task_handle, Frequency_hz<double> rate)
 {
     dbg::print("[*] Digital write continuously\n");
 
@@ -132,7 +132,37 @@
 }
 
 // Real impl
-[[nodiscard]] bool cAnalogDaqWriteCO::write(TaskHandle m_analog_task_handle, Frequency_hz<double> rate)
+[[nodiscard]] bool cAnalogWrite::write(TaskHandle analog_task_handle, double voltage)
+{
+
+    dbg::print("[*] Analog write\n");
+    uInt8 cmd[1];
+
+    if (!analog_task_handle)
+    {
+        dbg::print("[!] cAnalogWrite::write error analog_task_handle is null\n");
+        return false;
+    }
+
+    const bool bAutostart = true;
+    const double timeout_ms = 2000;
+    int32 written = 0;
+    int32 daq_ret = DAQmxWriteAnalogF64(analog_task_handle, 1, bAutostart, timeout_ms, DAQmx_Val_GroupByChannel, &voltage, &written, NULL);
+    if (0 != daq_ret)
+    {
+        // Error -200088 Task specified is invalid or does not exist. 
+        // Error -200477 Specified operation cannot be performed when there are no devices in the task. 
+        // Error -200587 Requested operation could not be performed, because the specified digital lines are either reserved or the device is not present in NI - DAQmx.
+        std::println("[!] DAQmxWriteAnalogF64 Failed with err: {}", daq_ret);
+        return false;
+    }
+
+    //std::print("[*] Digital write\n");
+    return true;
+}
+
+// Real impl
+[[nodiscard]] bool cAnalogWriteCO::write(TaskHandle m_analog_task_handle, Frequency_hz<double> rate)
 {
     dbg::print("[*] Analog write continuously\n");
     int32 daq_ret = 0;
@@ -238,6 +268,10 @@
     {
         return cDigitalWrite();
     }
+    if (choice == writer_type::analog_real)
+    {
+        return cAnalogWrite();
+    }
 
     assert(false);
     return cDigitalWriteSim();
@@ -248,12 +282,12 @@
 {
     if (choice == writer_type::digital_real_co)
     {
-        return cDigitalDaqWriteCO();
+        return cDigitalWriteCO();
     }
     if (choice == writer_type::analog_real_co)
     {
-        return cAnalogDaqWriteCO();
+        return cAnalogWriteCO();
     }
     assert(false);
-    return cDigitalDaqWriteCO();
+    return cDigitalWriteCO();
 }

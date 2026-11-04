@@ -21,9 +21,9 @@ static void pwm_loop(std::stop_token st, cppDaq* daq, size_t pin, size_t period_
 	while (!st.stop_requested())
 	{
 		auto half_period_us = period_us / 2;
-		daq->WriteDigitalPin(digital_pin(pin), digital_state::HIGH);
+		daq->WriteDigitalPin(digital_pin(pin), 1.0);
 		std::this_thread::sleep_for(std::chrono::microseconds(half_period_us));
-		daq->WriteDigitalPin(digital_pin(pin), digital_state::LOW);
+		daq->WriteDigitalPin(digital_pin(pin), 0.0);
 		std::this_thread::sleep_for(std::chrono::microseconds(half_period_us));
 	}
 }

@@ -40,17 +40,17 @@ int main()
 
 	m_daq->StartAnalogPWM(CLOCK_PIN, Frequency_hz<double>(1500.0));
 
-	m_daq->WriteDigitalPin(DIR_PIN, digital_state::HIGH);// turn clockwise
-	m_daq->WriteDigitalPin(MOVE_PIN, digital_state::LOW); // Enable
+	m_daq->WriteDigitalPin(DIR_PIN, 1.0);// turn clockwise
+	m_daq->WriteDigitalPin(MOVE_PIN, 0.0); // Enable
 
-	m_daq->WriteDigitalPin(DIR_PIN, digital_state::LOW);// turn clockwise
-	m_daq->WriteDigitalPin(MOVE_PIN, digital_state::LOW); // Enable
+	m_daq->WriteDigitalPin(DIR_PIN, 0.0);// turn clockwise
+	m_daq->WriteDigitalPin(MOVE_PIN, 0.0); // Enable
 
-	m_daq->WriteDigitalPin(DIR_PIN, digital_state::HIGH);// turn clockwise
-	m_daq->WriteDigitalPin(MOVE_PIN, digital_state::HIGH); // Enable
+	m_daq->WriteDigitalPin(DIR_PIN, 1.0);// turn clockwise
+	m_daq->WriteDigitalPin(MOVE_PIN, 1.0); // Enable
 
-	m_daq->WriteDigitalPin(DIR_PIN, digital_state::LOW);// turn clockwise
-	m_daq->WriteDigitalPin(MOVE_PIN, digital_state::HIGH); // Enable
+	m_daq->WriteDigitalPin(DIR_PIN, 0.0);// turn clockwise
+	m_daq->WriteDigitalPin(MOVE_PIN, 1.0); // Enable
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
