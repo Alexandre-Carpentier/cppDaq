@@ -63,14 +63,16 @@ enum class DAQ_STATUS
 struct DaqConfig
 {
     std::string device = "";
-    analog_pins analog ;
+    analog_input_pins analogInputs;
+	analog_output_pins analogOutputs;
     digital_pins digital;
     analog_pins_continuous analog_continuous;
     digital_pins_continuous digital_continuous;
 
-    // Constructeur par d�faut n�cessaire
+    // Default ctor
     DaqConfig()
-        : analog(analog_pins{})
+        : analogInputs(analog_input_pins{})
+        , analogOutputs(analog_output_pins{})
         , digital(digital_pins{})
         , analog_continuous(analog_pins_continuous{})
         , digital_continuous(digital_pins_continuous{})
@@ -82,8 +84,13 @@ struct DaqConfig
         return *this;
     }
 
-    DaqConfig& setAnalogPins(analog_pins pins) {
-        analog = std::move(pins);
+    DaqConfig& setAnalogInputPins(analog_input_pins pins) {
+        analogInputs = std::move(pins);
+        return *this;
+    }
+
+    DaqConfig& setAnalogOutputPins(analog_output_pins pins) {
+        analogOutputs = std::move(pins);
         return *this;
     }
 
@@ -113,7 +120,8 @@ public:
 	// Old constructor (deprecated)
     [[deprecated]]
     explicit cppDaq(const std::string device,
-        const analog_pins ans,
+        const analog_input_pins ans,
+        const analog_output_pins aos,
         const digital_pins dis,
         const analog_pins_continuous ans_co,
         const digital_pins_continuous dis_co);
@@ -127,9 +135,9 @@ public:
     [[nodiscard]] DAQ_STATUS GetStatus(); 
 
     // Analog I/O operations
-    [[nodiscard]] double ReadAnalogPin(analog_pin pin); 
-    [[nodiscard]] std::array<double, 1000> ReadMultipleAnalogPin(analog_pin pin); 
-    bool WriteAnalogPin(analog_pin pin, double value); 
+    [[nodiscard]] double ReadAnalogPin(analog_input_pin pin); 
+    [[nodiscard]] std::array<double, 1000> ReadMultipleAnalogPin(analog_input_pin pin); 
+    bool WriteAnalogPin(analog_output_pin pin, double value); 
 
     // Digital I/O operations
     bool WriteDigitalPin(digital_pin pin, double value); 

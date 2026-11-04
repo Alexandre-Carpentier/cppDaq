@@ -25,13 +25,13 @@ int main()
 	// Setup pins
 
 // Basic pin creation
-	analog_pin an0(0);
-	analog_pin an3(3);
-	analog_pin an7(7);
+	analog_input_pin an0(0);
+	analog_input_pin an3(3);
+	analog_input_pin an7(7);
 	digital_pin di0(0);
 
 	// Enable pin 0, 3 and 7 as analog input
-	const analog_pins analogs{ an0, an3, an7 }; // On Daq usb6001 0 to 7 are available with RSE (not differential)
+	const analog_input_pins analogs{ an0, an3, an7 }; // On Daq usb6001 0 to 7 are available with RSE (not differential)
 
 	// Enable pin 0 as output
 	const digital_pins digitals{di0}; // On Daq usb6001 P0.<0..7> + P1.<0..3> + P2.0>are available
@@ -40,7 +40,7 @@ int main()
 
 	auto daq = cppDaq(DaqConfig{}
 		.setDevice("Dev1")
-		.setAnalogPins(analogs)
+		.setAnalogInputPins(analogs)
 		.setDigitalPins(digitals)
 	);
 

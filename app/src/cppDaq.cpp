@@ -42,13 +42,14 @@ std::mutex task_mutex; // Lock read write when PWM is used
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Add more types here and defined it in daq_create_io.h to extend types 
-using io = std::variant<CreateAnalog, CreateDigital>;
+using io = std::variant<CreateAnalogInputs, CreateAnalogOutputs, CreateDigital>;
 using io_co = std::variant<CreateAnalogContinuous, CreateDigitalContinuous>;
 
 // All added types in the vectors will be called by the visitor
 std::tuple<std::vector<io>, std::vector<io_co>> create_ios(
     const std::string device_name, 
-    const analog_pins analog_io_id, 
+    const analog_input_pins analog_io_in_id, 
+	const analog_output_pins analog_io_out_id,
     const digital_pins  digital_io_id, 
     const analog_pins_continuous analog_io_co_id,
     const digital_pins_continuous digital_io_co_id
@@ -56,11 +57,17 @@ std::tuple<std::vector<io>, std::vector<io_co>> create_ios(
 {
     std::vector<io> ios;
 
-    CreateAnalog ana = CreateAnalog(device_name, analog_io_id);
-    if (ana.get_status() == DAQ_AN_CREATE_STATUS::NO_ERR)
+    CreateAnalogInputs ana_in = CreateAnalogInputs(device_name, analog_io_in_id);
+    if (ana_in.get_status() == DAQ_AN_CREATE_STATUS::NO_ERR)
     {
-        ios.push_back(ana);
+        ios.push_back(ana_in);
     }
+
+    CreateAnalogOutputs ana_out = CreateAnalogOutputs(device_name, analog_io_out_id);
+	if (ana_out.get_status() == DAQ_AN_CREATE_STATUS::NO_ERR)
+	{
+		ios.push_back(ana_out);
+	}
 
     CreateDigital dig = CreateDigital(device_name, digital_io_id);
     if (dig.get_status() == DAQ_DI_CREATE_STATUS::NO_ERR)
@@ -84,14 +91,28 @@ std::tuple<std::vector<io>, std::vector<io_co>> create_ios(
 }
 
 // return analog type called by the visitor
-std::vector<io> create_analog_io(const std::string device_name, const  analog_pins  analog_io_id)
+std::vector<io> create_analog_input_io(const std::string device_name, const  analog_input_pins  analog_io_id)
 {
     std::vector<io> ios;
 
-    CreateAnalog ana = CreateAnalog(device_name, analog_io_id);
+    CreateAnalogInputs ana = CreateAnalogInputs(device_name, analog_io_id);
     if (ana.get_status() == DAQ_AN_CREATE_STATUS::NO_ERR)
     {
         ios.push_back(ana);
+    }
+
+    return ios;
+}
+
+// return analog type called by the visitor
+std::vector<io> create_analog_output_io(const std::string device_name, const  analog_output_pins  analog_io_id)
+{
+    std::vector<io> ios;
+
+    CreateAnalogOutputs aos = CreateAnalogOutputs(device_name, analog_io_id);
+    if (aos.get_status() == DAQ_AN_CREATE_STATUS::NO_ERR)
+    {
+        ios.push_back(aos);
     }
 
     return ios;
@@ -358,13 +379,21 @@ SANITIZE_STATUS do_sanitize(pin_list pins, size_t MAX_CHANNELS)
 class cppDaq::cppDaqimpl
 {
 public:
-    cppDaqimpl(cppDaq* self, const std::string device, const analog_pins ans, const digital_pins dis, const analog_pins_continuous ans_co, const digital_pins_continuous dis_co) :
-        m_analog_io_id(ans),
+    cppDaqimpl(cppDaq* self, const std::string device, 
+        const analog_input_pins ans, 
+        const analog_output_pins aos, 
+        const digital_pins dis, 
+        const analog_pins_continuous ans_co, 
+        const digital_pins_continuous dis_co
+    ) :
+        m_analog_input_io_id(ans),
+        m_analog_output_io_id(aos),
         m_digital_io_id(dis),
         m_analog_co_io_id(ans_co),
         m_digital_co_io_id(dis_co),
 
-        use_analog(false),
+        use_analog_input(false),
+        use_analog_output(false),
         use_digital(false),
         use_digital_co(false),
         use_analog_co(false),
@@ -374,13 +403,14 @@ public:
 
         // Sanitize for each type of io
 
-        SANITIZE_STATUS analog_validity = do_sanitize(ans, MAX_ANALOG_INPUT_CHANNELS);
+        SANITIZE_STATUS analog_input_validity = do_sanitize(ans, MAX_ANALOG_INPUT_CHANNELS);
+        SANITIZE_STATUS analog_output_validity = do_sanitize(aos, MAX_ANALOG_OUTPUT_CHANNELS);
         SANITIZE_STATUS digital_validity = do_sanitize(dis, MAX_DIGITAL_CHANNELS);
         SANITIZE_STATUS analog_co_validity = do_sanitize(ans_co, MAX_ANALOG_OUTPUT_CHANNELS);
         SANITIZE_STATUS digital_co_validity = do_sanitize(dis_co, MAX_DIGITAL_CHANNELS);
 
         // Check if a port is in another state than NO_ERR or DAQVOID = DAQ_STATUS::INPUTS_NOT_VALID
-        auto is_all_port_valid = [analog_validity, digital_validity, analog_co_validity, digital_co_validity]() {
+        auto is_all_port_valid = [analog_input_validity, analog_output_validity, digital_validity, analog_co_validity, digital_co_validity]() {
 
             auto is_port_valid = [](SANITIZE_STATUS status) {
                 bool state = false;
@@ -395,7 +425,7 @@ public:
                 return state;
                 };
 
-            if (!is_port_valid(analog_validity) || !is_port_valid(digital_validity) || !is_port_valid(analog_co_validity) || !is_port_valid(digital_co_validity))
+            if (!is_port_valid(analog_input_validity) || !is_port_valid(analog_output_validity) || !is_port_valid(digital_validity) || !is_port_valid(analog_co_validity) || !is_port_valid(digital_co_validity))
             {
                 return DAQ_STATUS::INPUTS_NOT_VALID;
             }
@@ -442,11 +472,21 @@ public:
 
         // Setup analog and digital ios
 
-        if (analog_validity == SANITIZE_STATUS::NO_ERR)
+        if (analog_input_validity == SANITIZE_STATUS::NO_ERR)
         {
-            use_analog = true;
-            std::vector<io> analogs = create_analog_io(m_device, ans);
-            for (auto& an : analogs)
+            use_analog_input = true;
+            std::vector<io> analog_inputs = create_analog_input_io(m_device, ans);
+            for (auto& an : analog_inputs)
+            {
+                ios.push_back(an);
+            }
+        }
+
+        if (analog_output_validity == SANITIZE_STATUS::NO_ERR)
+        {
+            use_analog_output = true;
+            std::vector<io> analog_outputs = create_analog_output_io(m_device, aos);
+            for (auto& an : analog_outputs)
             {
                 ios.push_back(an);
             }
@@ -493,7 +533,7 @@ public:
 
         // All empties
 
-        if ((!use_analog) && (!use_digital) && (!use_digital_co) && (!use_analog_co))
+        if ((!use_analog_input) && (!use_analog_output) && (!use_digital) && (!use_digital_co) && (!use_analog_co))
         {
             m_status = DAQ_STATUS::INPUTS_NOT_VALID;
         }
@@ -531,18 +571,18 @@ public:
         }
         if (type == IO_TYPE::ana)
         {
-            if (!use_analog)
+            if (!use_analog_input)
             {
 #ifdef _WIN32
-                std::string msg = std::format("get_value() fails, analog io not available\n");
+                std::string msg = std::format("get_value() fails, analog input io not available\n");
                 MessageBox(0, msg.c_str(), "Info", MB_ICONINFORMATION | S_OK);
 #endif
                 return NAN;
             }
-            if (!is_io_registered(pin, m_analog_io_id))
+            if (!is_io_registered(pin, m_analog_input_io_id))
             {
 #ifdef _WIN32
-                std::string msg = std::format("get_value() fails, analog io not registered\n");
+                std::string msg = std::format("get_value() fails, analog input io not registered\n");
                 MessageBox(0, msg.c_str(), "Info", MB_ICONINFORMATION | S_OK);
 #endif
                 return NAN;
@@ -572,7 +612,7 @@ public:
 
         io io_ = get_io_from_ios(ios, type);
 
-        size_t pos = pin_to_vec_pos(pin, m_analog_io_id);// Find pin pos in vec
+        size_t pos = pin_to_vec_pos(pin, m_analog_input_io_id);// Find pin pos in vec
         task_mutex.lock();
         auto result = std::visit([pos](auto&& arg) -> double
             {
@@ -669,12 +709,12 @@ public:
         //return ppwm->update_pulse(period_us);
     }
 
-    bool set_analog_value(analog_pin pin, double value)
+    bool set_analog_value(analog_output_pin pin, double value)
     {
-        if (!use_analog)
+        if (!use_analog_output)
         {
 #ifdef _WIN32
-            std::string msg = std::format("set_analog_value() fails, digital io not available\n");
+            std::string msg = std::format("set_analog_value() fails, analog output io not available\n");
             MessageBox(0, msg.c_str(), "Info", MB_ICONINFORMATION | S_OK);
 #endif
             return false;
@@ -682,13 +722,13 @@ public:
         if (!is_io_available(ios, IO_TYPE::ana))
         {
 #ifdef _WIN32
-            std::string msg = std::format("set_analog_value() fails, analog io not available\n");
+            std::string msg = std::format("set_analog_value() fails, analog output io not available\n");
             MessageBox(0, msg.c_str(), "Info", MB_ICONINFORMATION | S_OK);
 #endif
             return false;
         }
 
-        if (!is_io_registered(pin, m_analog_io_id))
+        if (!is_io_registered(pin, m_analog_output_io_id))
         {
             std::print("[!] IO PIN is not valid\n");
 #ifdef _WIN32
@@ -699,7 +739,7 @@ public:
         }
 
         io io_ = get_io_from_ios(ios, IO_TYPE::ana);
-        size_t pos = pin_to_vec_pos(pin, m_analog_io_id);// Find pin pos in vec
+        size_t pos = pin_to_vec_pos(pin, m_analog_output_io_id);// Find pin pos in vec
 
         task_mutex.lock();
         auto result = std::visit([&pos, &value](auto&& arg) -> bool
@@ -928,12 +968,14 @@ private:
     std::vector<io_co> ios_co;
 	std::tuple<std::vector<io>, std::vector<io_co>> all_ios;
 
-    analog_pins m_analog_io_id;
+    analog_input_pins m_analog_input_io_id;
+    analog_output_pins m_analog_output_io_id;
     digital_pins m_digital_io_id;
     analog_pins_continuous m_analog_co_io_id;
     digital_pins_continuous m_digital_co_io_id;
 
-    bool use_analog;
+    bool use_analog_input;
+    bool use_analog_output;
     bool use_digital;
     bool use_analog_co;
     bool use_digital_co;
@@ -942,7 +984,7 @@ private:
 };
 
 cppDaq::cppDaq(const DaqConfig& config)
-    : pdaq(std::make_unique<cppDaqimpl>(this, config.device, config.analog, config.digital, config.analog_continuous, config.digital_continuous)),
+    : pdaq(std::make_unique<cppDaqimpl>(this, config.device, config.analogInputs, config.analogOutputs, config.digital, config.analog_continuous, config.digital_continuous)),
     m_config(config),
    status(DAQ_STATUS::NO_ERR)
 {
@@ -966,15 +1008,15 @@ bool cppDaq::resetDaq()
         pdaq->~cppDaqimpl();
         std::print(CYN"[!] resetDaq() called.\n");
         std::print(NC);
-        pdaq = std::make_unique<cppDaqimpl>(this, m_config.device, m_config.analog, m_config.digital, m_config.analog_continuous, m_config.digital_continuous);
+        pdaq = std::make_unique<cppDaqimpl>(this, m_config.device, m_config.analogInputs, m_config.analogOutputs, m_config.digital, m_config.analog_continuous, m_config.digital_continuous);
         return true;
     }
     return false;
 }
 
 // Forwarder
-cppDaq::cppDaq(const std::string device, const analog_pins ans, const digital_pins dis, const analog_pins_continuous ans_co, const digital_pins_continuous dis_co) :
-    pdaq(std::make_unique<cppDaqimpl>(this, device, ans, dis, ans_co, dis_co)),
+cppDaq::cppDaq(const std::string device, const analog_input_pins ans, const analog_output_pins aos, const digital_pins dis, const analog_pins_continuous ans_co, const digital_pins_continuous dis_co) :
+    pdaq(std::make_unique<cppDaqimpl>(this, device, ans, aos, dis, ans_co, dis_co)),
     status(DAQ_STATUS::DAQ_NOT_INITIALIZED)
 { 
     assert(pdaq);
@@ -1005,7 +1047,7 @@ DAQ_STATUS cppDaq::GetStatus()
     return status;
 }
 
-double cppDaq::ReadAnalogPin(analog_pin pin)
+double cppDaq::ReadAnalogPin(analog_input_pin pin)
 {
     if (!pdaq)
     {
@@ -1020,7 +1062,7 @@ double cppDaq::ReadAnalogPin(analog_pin pin)
     return pdaq->get_value(IO_TYPE::ana, pin);
 }
 
-std::array<double, 1000> cppDaq::ReadMultipleAnalogPin(analog_pin pin)
+std::array<double, 1000> cppDaq::ReadMultipleAnalogPin(analog_input_pin pin)
 {
     std::array<double, 1000> arr = { 0 };
 
@@ -1054,7 +1096,7 @@ bool cppDaq::WriteDigitalPin(digital_pin pin, double value)
 }
 
 // Forwarder
-bool cppDaq::WriteAnalogPin(analog_pin pin, double value)
+bool cppDaq::WriteAnalogPin(analog_output_pin pin, double value)
 {
     if (!pdaq)
     {

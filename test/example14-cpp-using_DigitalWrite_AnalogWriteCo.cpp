@@ -18,8 +18,8 @@
 
 // To test with R208 driver
 
-analog_pin HOME_PIN{ 0 };				// AI0  → R208 DB9 Pin 5 : Home position sensor
-analog_pin_continuous CLOCK_PIN{ 0 };	// AO0  → R208 DB9 Pin 2 : PWM step signal (speed control)
+analog_input_pin HOME_PIN{ 0 };				// AI0  → R208 DB9 Pin 5 : Home position sensor
+analog_output_pin_continuous CLOCK_PIN{ 0 };	// AO0  → R208 DB9 Pin 2 : PWM step signal (speed control)
 digital_pin MOVE_PIN{ 0 };				// P0.0 → R208 DB9 Pin 4 : Motor enable (HIGH = active)
 digital_pin DIR_PIN{ 1 };				// P0.1 → R208 DB9 Pin 3 : Direction (HIGH = CW, LOW = CCW)
 

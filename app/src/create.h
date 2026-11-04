@@ -27,12 +27,12 @@
 
 
 // Proxy classes to platform dependent implementation details
-class CreateAnalog {
+class CreateAnalogInputs {
 public:
-    CreateAnalog(const std::string device_name, analog_pins analog_io_id)
+    CreateAnalogInputs(const std::string device_name, analog_input_pins analog_io_id)
 #ifndef __aarch64__
         // WINDOWS and LINUX
-        : analog{ device_name, analog_io_id }
+        : analogInputs{ device_name, analog_io_id }
 #endif
     {
         // APPLE SILICON
@@ -41,29 +41,21 @@ public:
     {
         double res = 0.0;
 #ifndef __aarch64__
-        res = analog.read(analog_io_id);
-#endif
-        return res;
-    }
-    bool write(pin_t analog_io_id, double value)
-    {
-        bool res = false;
-#ifndef __aarch64__
-        res = analog.write(analog_io_id, value);
+        res = analogInputs.read(analog_io_id);
 #endif
         return res;
     }
     void close()
     {
 #ifndef __aarch64__
-        analog.close();
+        analogInputs.close();
 #endif
     }
     DAQ_AN_CREATE_STATUS get_status()
     {
         DAQ_AN_CREATE_STATUS res = DAQ_AN_CREATE_STATUS::INPUTS_NOT_VALID;
 #ifndef __aarch64__
-        res = analog.get_status();
+        res = analogInputs.get_status();
 #endif
         return res;
     }
@@ -72,12 +64,12 @@ public:
     {
         IO_TYPE res = IO_TYPE::unknown;
 #ifndef __aarch64__
-        res = analog.get_type();
+        res = analogInputs.get_type();
 #endif
         return res;
     }
 
-    ~CreateAnalog()
+    ~CreateAnalogInputs()
     {
 #ifndef __aarch64__
 #endif
@@ -85,9 +77,64 @@ public:
 
 private:
 #ifndef __aarch64__
-    daqmxCreateAnalog analog;
+    daqmxCreateAnalogInputs analogInputs;
 #endif
 };
+
+class CreateAnalogOutputs {
+public:
+    CreateAnalogOutputs(const std::string device_name, analog_output_pins analog_io_id)
+#ifndef __aarch64__
+        // WINDOWS and LINUX
+        : analogOutputs{ device_name, analog_io_id }
+#endif
+    {
+        // APPLE SILICON
+    }
+    double read(pin_t analog_io_id)
+    {
+        double res = 0.0;
+#ifndef __aarch64__
+        res = analogOutputs.read(analog_io_id);
+#endif
+        return res;
+    }
+    void close()
+    {
+#ifndef __aarch64__
+        analogOutputs.close();
+#endif
+    }
+    DAQ_AN_CREATE_STATUS get_status()
+    {
+        DAQ_AN_CREATE_STATUS res = DAQ_AN_CREATE_STATUS::INPUTS_NOT_VALID;
+#ifndef __aarch64__
+        res = analogOutputs.get_status();
+#endif
+        return res;
+    }
+
+    IO_TYPE get_type()
+    {
+        IO_TYPE res = IO_TYPE::unknown;
+#ifndef __aarch64__
+        res = analogOutputs.get_type();
+#endif
+        return res;
+    }
+
+    ~CreateAnalogOutputs()
+    {
+#ifndef __aarch64__
+#endif
+    }
+
+private:
+#ifndef __aarch64__
+    daqmxCreateAnalogOutputs analogOutputs;
+#endif
+};
+
 
 class CreateDigital {
 public:

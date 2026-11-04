@@ -19,13 +19,15 @@
 // TYPES:
 
 // pin_t
-// 	analog_pin
+// 	analog_input_pin
+// 	analog_output_pin
 // 	digital_pin
 // 	analog_pin_continuous
 // 	digital_pin_continuous
 
 // pin_list
-// 	analog_pins
+// 	analog_input_pins
+// 	analog_output_pins
 // 	digital_pins
 // 	analog_pins_continuous
 // 	digital_pins_continuous
@@ -44,9 +46,15 @@ private:
 };
 
 // Analog pin_t type
-struct analog_pin : public pin_t
+struct analog_input_pin : public pin_t
 {
-    explicit constexpr analog_pin(size_t pin) : pin_t(pin) {}
+    explicit constexpr analog_input_pin(size_t pin) : pin_t(pin) {}
+};
+
+// Analog pin_t type
+struct analog_output_pin : public pin_t
+{
+    explicit constexpr analog_output_pin(size_t pin) : pin_t(pin) {}
 };
 
 // Digital pin type
@@ -141,18 +149,35 @@ private:
     std::vector<size_t> vec;
 };
 
-struct analog_pins : public pin_list
+struct analog_input_pins : public pin_list
 {
     template<typename... Pins>
-    explicit analog_pins(Pins&&... pins)
+    explicit analog_input_pins(Pins&&... pins)
         : pin_list(std::forward<Pins>(pins)...)
     {
     }
-    explicit analog_pins(std::initializer_list<size_t> pins)
+    explicit analog_input_pins(std::initializer_list<size_t> pins)
         : pin_list(pins)
     {
     }
-    explicit analog_pins(std::vector<size_t> pins)
+    explicit analog_input_pins(std::vector<size_t> pins)
+        : pin_list(std::move(pins))
+    {
+    }
+};
+
+struct analog_output_pins : public pin_list
+{
+    template<typename... Pins>
+    explicit analog_output_pins(Pins&&... pins)
+        : pin_list(std::forward<Pins>(pins)...)
+    {
+    }
+    explicit analog_output_pins(std::initializer_list<size_t> pins)
+        : pin_list(pins)
+    {
+    }
+    explicit analog_output_pins(std::vector<size_t> pins)
         : pin_list(std::move(pins))
     {
     }
@@ -210,6 +235,7 @@ struct digital_pins_continuous : public pin_list
 enum class IO_TYPE
 {
     ana = 0,
+    aos,
     dig,
     dig_co,
     ana_co,
