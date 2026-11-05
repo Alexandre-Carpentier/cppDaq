@@ -303,9 +303,9 @@ public:
 		if (isMoving)
 		{
 			m_daq->WriteAnalogPin(SW_CLOCK_PIN, 3.3); // PWM HIGH
-			std::this_thread::sleep_for(std::chrono::microseconds(static_cast<int>(1e6 / m_freqHz))); // Wait for the duration of one clock cycle
+			std::this_thread::sleep_for(std::chrono::microseconds(static_cast<int>(1e6 / m_freqHz/2))); // Wait for the duration of one clock cycle
 			m_daq->WriteAnalogPin(SW_CLOCK_PIN, 0.0); // PWM LOW
-			std::this_thread::sleep_for(std::chrono::microseconds(static_cast<int>(1e6 / m_freqHz))); // Wait for the duration of one clock cycle
+			std::this_thread::sleep_for(std::chrono::microseconds(static_cast<int>(1e6 / m_freqHz/2))); // Wait for the duration of one clock cycle
 			s_state = false; // Save state
 		}
 		else
@@ -373,9 +373,12 @@ private:
 int main()
 {
 	clockBased_hardware clk;
-	clk.start(1000.0);
-	clk.doMove(true);
-	std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+	clk.start(10.0);
+
+	for (int i = 0; i < 100; ++i)
+	{
+		clk.doMove(true);
+	}
 	clk.doMove(false);
 	clk.stop();
 	return 0;

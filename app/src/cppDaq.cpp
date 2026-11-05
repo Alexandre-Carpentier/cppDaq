@@ -738,7 +738,7 @@ public:
             return false;
         }
 
-        io io_ = get_io_from_ios(ios, IO_TYPE::ana);
+        io io_ = get_io_from_ios(ios, IO_TYPE::aos);
         size_t pos = pin_to_vec_pos(pin, m_analog_output_io_id);// Find pin pos in vec
 
         task_mutex.lock();

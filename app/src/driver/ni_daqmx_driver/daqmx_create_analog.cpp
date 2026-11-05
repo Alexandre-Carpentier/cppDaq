@@ -247,7 +247,7 @@ void daqmxCreateAnalogOutputs::close()
 }
 
 daqmxCreateAnalogOutputs::daqmxCreateAnalogOutputs(const std::string device_name, analog_output_pins analog_io_ids) :
-    m_daq_ret(0), m_status(DAQ_AN_CREATE_STATUS::NO_ERR), m_type(IO_TYPE::ana)
+    m_daq_ret(0), m_status(DAQ_AN_CREATE_STATUS::NO_ERR), m_type(IO_TYPE::aos)
 {
 
     //Sanitize
@@ -279,7 +279,7 @@ daqmxCreateAnalogOutputs::daqmxCreateAnalogOutputs(const std::string device_name
 
     // Init some tasks of size max
 
-    for (size_t o = 0; o < MAX_ANALOG_INPUT_CHANNELS; o++)
+    for (size_t o = 0; o < MAX_ANALOG_OUTPUT_CHANNELS; o++)
     {
         m_analog_task_handle.push_back(TaskHandle());
     }
@@ -332,13 +332,12 @@ daqmxCreateAnalogOutputs::daqmxCreateAnalogOutputs(const std::string device_name
         // 
         // Create an appropriate chan with DAQmxCreateAIVoltageChan()
 
-/*        m_daq_ret = DAQmxCreateAIVoltageChan(
+        m_daq_ret = DAQmxCreateAOVoltageChan(
             m_analog_task_handle[pos],
             channel_physical_name[pos].c_str(),           // DEV1/ai0
             channel_name[pos].c_str(),                    // Chan0
-            DAQmx_Val_RSE,                              // RSE/Differential/...
             min_range,                                  // -10V
-            max_range,                                  // +10V
+            max_range,                                 // +10V
             DAQmx_Val_Volts,                            // return Volt or custom scale
             NULL);
 
@@ -358,7 +357,7 @@ daqmxCreateAnalogOutputs::daqmxCreateAnalogOutputs(const std::string device_name
         // Check the task
 
         char buffer[100] = "";
-        DAQmxGetNthTaskReadChannel(m_analog_task_handle[pos], 1, buffer, 100);
+        DAQmxGetNthTaskChannel(m_analog_task_handle[pos], 1, buffer, 100);
         std::string task_name = buffer;
         if (task_name.size() == 0)
         {
@@ -368,7 +367,7 @@ daqmxCreateAnalogOutputs::daqmxCreateAnalogOutputs(const std::string device_name
 #endif
             m_status = DAQ_AN_CREATE_STATUS::ERR_READ_TASK;
             assert(false);
-        }*/
+        }
 
         pos++;
     }
