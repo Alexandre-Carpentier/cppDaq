@@ -45,6 +45,14 @@ public:
 #endif
         return res;
     }
+    bool write(pin_t analog_io_id, double value)
+    {
+        bool res = false;
+#ifndef __aarch64__
+        res = analogInputs.write(analog_io_id, value);
+#endif
+        return res;
+    }
     void close()
     {
 #ifndef __aarch64__
@@ -96,6 +104,14 @@ public:
         double res = 0.0;
 #ifndef __aarch64__
         res = analogOutputs.read(analog_io_id);
+#endif
+        return res;
+    }
+    bool write(pin_t analog_io_id, double value)
+    {
+        bool res = false;
+#ifndef __aarch64__
+        res = analogOutputs.write(analog_io_id, value);
 #endif
         return res;
     }

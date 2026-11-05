@@ -35,7 +35,8 @@ typedef void* HDAQ;
  
 	// To instanciate: pass vec with desired pin. Ex: 1,3,7 to enable pin 1, 3 and 7. Must not be > to MAX_ANALOG_CHANNELS or MAX_DIGITAL_CHANNELS
 	DAQAPI HDAQ create_cppDaq(const char* device,
-		const int analog_count, int analog_io_id[32],
+		const int analog_in_count, int analog_io_id[32],
+		const int analog_out_count, int analog_out_io_id[32],
 		const int digital_count, int digital_io_id[32],
 		const int analog_co_count, int analog_co_io_id[32],
 		const int digital_co_count, int digital_co_io_id[32]);

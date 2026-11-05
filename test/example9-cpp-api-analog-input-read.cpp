@@ -20,7 +20,7 @@ int main()
 	std::string dev = GetDeviceList().at(0);
 
 	// Describe pin
-	analog_pin an0(0);
+	analog_input_pin an0(0);
 
 	// set sine freq
 	// Max 39kHz with R208
@@ -29,7 +29,7 @@ int main()
 	// Create config with a named parameter list
 	auto config = DaqConfig{}
 		.setDevice(dev)
-		.setAnalogPins(analog_pins{ an0 }
+		.setAnalogInputPins(analog_input_pins{ an0 }
 		);
 
 	// instantiate

@@ -14,9 +14,9 @@ int main()
 
 	std::print(CYN"[ EXAMPLE 12] Testing double free for crash...\n"); std::print(NC);
 
-	analog_pin an0{ 0 };
+	analog_input_pin an0{ 0 };
 	DaqConfig config;
-	config.setDevice("Dev1").setAnalogPins(analog_pins(an0));
+	config.setDevice("Dev1").setAnalogInputPins(analog_input_pins(an0));
 	cppDaq* usb = new cppDaq(config);
 
 	double mesure_volt = usb->ReadAnalogPin(an0);

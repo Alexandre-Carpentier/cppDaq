@@ -14,7 +14,7 @@ int main()
 
 	std::print(CYN"[ EXAMPLE 10] Testing opening and closing object in loop for crash...\n"); std::print(NC);
 
-	analog_pin an0{ 0 };
+	analog_input_pin an0{ 0 };
 	for (size_t i = 0; i < 2; ++i)
 	{
 		char dev[] = "Dev1";
@@ -22,6 +22,7 @@ int main()
 
 		HDAQ usb = create_cppDaq(dev,
 			1, an,
+			0, nullptr,
 			0, nullptr,
 			0, nullptr,
 			0, nullptr);

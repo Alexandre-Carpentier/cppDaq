@@ -22,7 +22,7 @@ int main()
 
 	// With the C api you must specify the number of pin for each type and the list of pin to use. 
 	// If you don't want to use a type of pin, set count to 0 and list to nullptr
-	HDAQ daq = create_cppDaq(dev, 0, nullptr, 2, di, 1, an_co, 0, nullptr);
+	HDAQ daq = create_cppDaq(dev, 0, nullptr, 0, nullptr, 2, di, 1, an_co, 0, nullptr);
 	if (NULL == daq)		
 	{
 		std::print("[!] Error create_cppDaq_()\n");

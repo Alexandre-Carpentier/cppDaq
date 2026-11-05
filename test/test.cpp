@@ -88,10 +88,10 @@ TEST(test_api, test1_valid_inputs)
 
 	// Enable pin 0, 3 and 7 as analog input
 
-	analog_pin an0(0);
-	analog_pin an1(1);
-	const analog_pins analogs{ an0, an1}; // On Daq usb6001 0 to 7 are available with RSE (not differential)
-
+	analog_input_pin an0(0);
+	analog_input_pin an1(1);
+	const analog_input_pins analogs_in{ an0, an1}; // On Daq usb6001 0 to 7 are available with RSE (not differential)
+	const analog_output_pins analogs_out{ an0 }; // On Daq usb6001 0 to 7 are available with RSE (not differential)
 	digital_pin di0(0);
 	digital_pin di1(1);
 
@@ -102,7 +102,8 @@ TEST(test_api, test1_valid_inputs)
 
 	cppDaq daq = cppDaq(DaqConfig{}
 		.setDevice("")
-		.setAnalogPins(analogs)
+		.setAnalogInputPins(analogs_in)
+		.setAnalogOutputPins(analogs_out)
 		.setDigitalPins(digitals)
 		.setAnalogContinuous(analogs_co)
 		.setDigitalContinuous(digitals_co)
@@ -122,18 +123,18 @@ TEST(test_api, test2)
 {
 	std::print("[*] test daq with signals id > MAX_CHAN\n");
 
-	analog_pin an0{ 0 };
-	analog_pin an9{ 9 };
+	analog_input_pin an0{ 0 };
+	analog_input_pin an9{ 9 };
 	digital_pin di4{ 4 };
 	digital_pin di1{ 1 };
-	analog_pins analogs{ std::vector<size_t>{an0.get(), an9.get()} };
+	analog_input_pins analogs{ std::vector<size_t>{an0.get(), an9.get()} };
 	digital_pins digitals{ std::vector<size_t>{di4.get(), di1.get() }};
 	analog_pins_continuous analogs_co{ std::vector<size_t>{} };
 	digital_pins_continuous digitals_co{ std::vector<size_t>{} };
 
 	cppDaq daq = cppDaq(DaqConfig{}
 		.setDevice("")
-		.setAnalogPins(analogs)
+		.setAnalogInputPins(analogs)
 		.setDigitalPins(digitals)
 		.setAnalogContinuous(analogs_co)
 		.setDigitalContinuous(digitals_co)
@@ -152,18 +153,18 @@ TEST(test_api, test2)
 TEST(test_api, test3)
 {
 	std::print("[*] test daq sig with same chan_num\n");
-	analog_pin an2{ 2 };
-	analog_pin an2_{ 2 };
+	analog_input_pin an2{ 2 };
+	analog_input_pin an2_{ 2 };
 	digital_pin di7{ 7 };
 	digital_pin di7_{ 7 };
-	analog_pins analogs(std::vector<size_t>(an2.get(), an2_.get()));
+	analog_input_pins analogs(std::vector<size_t>(an2.get(), an2_.get()));
 	digital_pins digitals{ std::vector<size_t>(di7.get(), di7_.get()) };
 	analog_pins_continuous analogs_co{ std::vector<size_t>{} };
 	digital_pins_continuous digitals_co{ std::vector<size_t>{} };
 
 	cppDaq daq = cppDaq(DaqConfig{}
 		.setDevice("")
-		.setAnalogPins(analogs)
+		.setAnalogInputPins(analogs)
 		.setDigitalPins(digitals)
 		.setAnalogContinuous(analogs_co)
 		.setDigitalContinuous(digitals_co)
@@ -183,20 +184,20 @@ TEST(test_api, test4)
 	std::print("[*] test daq channel with empty name and void vectors\n");
 
 	// Safe by design (won't compile)
-	//analog_pin an0{};
-	//analog_pin an1{};
+	//analog_input_pin an0{};
+	//analog_input_pin an1{};
 	//digital_pin di2{};
 	//digital_pin di3{};
 
 	// Testing without pin registered
-	analog_pins analogs(std::vector<size_t>({}));
+	analog_input_pins analogs(std::vector<size_t>({}));
 	digital_pins digitals{ std::vector<size_t>({}) };
 	analog_pins_continuous analogs_co{ std::vector<size_t>{} };
 	digital_pins_continuous digitals_co{ std::vector<size_t>{} };
 
 	cppDaq daq = cppDaq(DaqConfig{}
 		.setDevice("")
-		.setAnalogPins(analogs)
+		.setAnalogInputPins(analogs)
 		.setDigitalPins(digitals)
 		.setAnalogContinuous(analogs_co)
 		.setDigitalContinuous(digitals_co)
@@ -230,8 +231,8 @@ TEST(test_api, test6)
 TEST(test_api, test7)
 {
 	std::print("[*] test analog_daq_io with bad name\n");
-	analog_pins analogs(std::vector<size_t>(0, 1));
-	daqmxCreateAnalog an("wrong_name", analogs);
+	analog_input_pins analogs(std::vector<size_t>(0, 1));
+	daqmxCreateAnalogInputs an("wrong_name", analogs);
 	EXPECT_EQ(an.get_status(), DAQ_AN_CREATE_STATUS::DEVICE_NOT_FOUND);
 }
 
@@ -239,8 +240,8 @@ TEST(test_api, test8)
 {
 	std::print("[*] test analog_daq_io with bad chan conf 1\n");
 	const std::vector<size_t> an_channel_number{ 9, 1 };
-	analog_pins analogs(std::vector<size_t>(9, 1));
-	daqmxCreateAnalog an(get_name(),analogs);
+	analog_input_pins analogs(std::vector<size_t>(9, 1));
+	daqmxCreateAnalogInputs an(get_name(),analogs);
 	DAQ_AN_CREATE_STATUS stat = an.get_status();
 	EXPECT_EQ(stat, DAQ_AN_CREATE_STATUS::INPUTS_NOT_VALID);
 }
@@ -277,7 +278,7 @@ TEST(test_api, test11)
 	double result = 0.0;
 
 	std::print(CYN"Only available on card with counter outputs(6001, 6510 not compatible\nTEST CAN FAIL HERE\n"); std::print(NC);
-	HDAQ daq = create_cppDaq(dev, 2, an, 0, nullptr, 0, nullptr, 2, di_co);
+	HDAQ daq = create_cppDaq(dev, 2, an, 0, nullptr, 0, nullptr, 0, nullptr, 2, di_co);
 
 	#ifdef __aarch64__
 	EXPECT_EQ(daq, nullptr);
@@ -312,7 +313,7 @@ TEST(test_api, test12)
 	int di[2] = { 0,1 };
 	double result = 0.0;
 
-	HDAQ daq = create_cppDaq(dev, -1, an, 0, nullptr, 0, nullptr, 0, nullptr);
+	HDAQ daq = create_cppDaq(dev, -1, an, 0, nullptr, 0, nullptr, 0, nullptr, 0, nullptr);
 
 	EXPECT_EQ(daq, nullptr);
 	destroy_cppDaq_(daq);
@@ -327,7 +328,7 @@ TEST(test_api, test13)
 	int di[2] = { 9,1 };
 	double result = 0.0;
 
-	HDAQ daq = create_cppDaq(dev, 2, an, 0, di, 0, nullptr, 0, nullptr);
+	HDAQ daq = create_cppDaq(dev, 2, an, 0, nullptr, 0, di, 0, nullptr, 0, nullptr);
 	#ifdef __aarch64__
 	EXPECT_EQ(daq, nullptr);
 	return;
@@ -349,7 +350,7 @@ TEST(test_api, test14)
 	int di[2] = { 9,1 };
 	double result = 0.0;
 
-	HDAQ daq = create_cppDaq(dev, 2, an, 0, di, 0, nullptr, 0, nullptr);
+	HDAQ daq = create_cppDaq(dev, 2, an, 0, nullptr, 0, di, 0, nullptr, 0, nullptr);
 
 	EXPECT_EQ(set_digital_value_(daq, 1, 1), false);
 	EXPECT_EQ(set_digital_value_(daq, 9, 1), false);
@@ -361,24 +362,24 @@ TEST(test_api, test15)
 	std::print("[*] Test strong types\n");
 
 	//cppDaq daq = cppDaq("Dev1", {0,1,2}, {0,1,2}, {0,1,2}, {0,1,2}); // nok
-	analog_pin an0(0);//ok
-	//analog_pin an1(0.0);//nok
-	//analog_pin an0("txt");//nok
+	analog_input_pin an0(0);//ok
+	//analog_input_pin an1(0.0);//nok
+	//analog_input_pin an0("txt");//nok
 	
-	analog_pins analogs = analog_pins{0,1,2};//nok
-	//analog_pins analogs0 = analog_pins(0,1,2);//nok
+	analog_input_pins analogs = analog_input_pins{0,1,2};//nok
+	//analog_input_pins analogs0 = analog_input_pins(0,1,2);//nok
 	std::vector<size_t> list {0,1,2};
-	//analog_pins analogs1 = analog_pins(0,1,2);//nok
-	analog_pins analogs2= analog_pins(list);//ok
-	//analog_pins analogs3 = analog_pins(0);//nok
+	//analog_input_pins analogs1 = analog_input_pins(0,1,2);//nok
+	analog_input_pins analogs2= analog_input_pins(list);//ok
+	//analog_input_pins analogs3 = analog_input_pins(0);//nok
 
-	analog_pins analogs4 = analog_pins(an0); //ok
+	analog_input_pins analogs4 = analog_input_pins(an0); //ok
 
 	std::string dev = "";
 
 	cppDaq daq = cppDaq(DaqConfig{}
 		.setDevice("")
-		.setAnalogPins(analogs)
+		.setAnalogInputPins(analogs)
 	);
 	
 	DAQ_STATUS stat = daq.GetStatus();
@@ -402,12 +403,12 @@ TEST(test_api, test16)
 TEST(test_api, test17)
 {
 	std::print("[*] test cppDaq move semantics\n");
-	analog_pin an0(0);
-	analog_pins analogs{ an0 };
+	analog_input_pin an0(0);
+	analog_input_pins analogs{ an0 };
 
 	cppDaq daq1 = cppDaq(DaqConfig{}
 		.setDevice("")
-		.setAnalogPins(analogs)
+		.setAnalogInputPins(analogs)
 	);
 
 	cppDaq daq2 = std::move(daq1);
@@ -423,12 +424,12 @@ TEST(test_api, test17)
 TEST(test_api, test18)
 {
 	std::print("[*] test ReadAnalogPin\n");
-	analog_pin an0(0);
-	analog_pins analogs{ an0 };
+	analog_input_pin an0(0);
+	analog_input_pins analogs{ an0 };
 
 	cppDaq daq = cppDaq(DaqConfig{}
 		.setDevice("")
-		.setAnalogPins(analogs)
+		.setAnalogInputPins(analogs)
 	);
 
 	if (daq.GetStatus() == DAQ_STATUS::NO_ERR)
@@ -461,12 +462,12 @@ TEST(test_api, test19)
 TEST(test_api, test20)
 {
 	std::print("[*] test ReadMultipleAnalogPin\n");
-	analog_pin an0(0);
-	analog_pins analogs{ an0 };
+	analog_input_pin an0(0);
+	analog_input_pins analogs{ an0 };
 
 	cppDaq daq = cppDaq(DaqConfig{}
 		.setDevice("")
-		.setAnalogPins(analogs)
+		.setAnalogInputPins(analogs)
 	);
 
 	if (daq.GetStatus() == DAQ_STATUS::NO_ERR)
@@ -545,13 +546,13 @@ TEST(test_api, test23_PWM_analog_start)
 TEST(test_api, test24_test_parameters_initializer)
 {
 	std::print("[*] test Builder multiple adds\n");
-	analog_pin an0(0);
-	analog_pin an1(1);
+	analog_input_pin an0(0);
+	analog_input_pin an1(1);
 	
 	cppDaq daq = cppDaq(DaqConfig()
 		.setDevice("")
-		.setAnalogPins(analog_pins{ an0 })
-		.setAnalogPins(analog_pins{ an1 })
+		.setAnalogInputPins(analog_input_pins{ an0 })
+		.setAnalogInputPins(analog_input_pins{ an1 })
 	);
 
 
@@ -566,12 +567,12 @@ TEST(test_api, test24_test_parameters_initializer)
 TEST(test_api, test25_using_analog_write)
 {
 	std::print("[*] test WriteAnalogPin\n");
-	analog_pin an0(0);
-	analog_pins analogs{ an0 };
+	analog_output_pin an0(0);
+	analog_output_pins analogs{ an0 };
 
 	cppDaq daq = cppDaq(DaqConfig()
 		.setDevice("")
-		.setAnalogPins(analogs)
+		.setAnalogOutputPins(analogs)
 	);
 
 	if (daq.GetStatus() == DAQ_STATUS::NO_ERR)

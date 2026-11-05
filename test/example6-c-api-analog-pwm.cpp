@@ -23,7 +23,7 @@ int main()
 
 	// Create a daq object with 1 analog continuous output (an_co)
 	// Other pin must be set to 0 and list to nullptr if not used.
-	HDAQ daq = create_cppDaq(dev, 0, NULL, 0, NULL, 1, an_co, 0, NULL);
+	HDAQ daq = create_cppDaq(dev, 0, NULL, 0, NULL, 0, NULL, 1, an_co, 0, NULL);
 	if (!daq)
 	{
 		return EXIT_FAILURE;

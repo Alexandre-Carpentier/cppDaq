@@ -22,7 +22,7 @@ int main()
 	double result = 0.0;
 
 	// Create a daq object with 2 digital input.
-	HDAQ daq = create_cppDaq(dev, 0, nullptr, 2, di, 0, nullptr, 0, nullptr);
+	HDAQ daq = create_cppDaq(dev, 0, nullptr, 0, nullptr, 2, di, 0, nullptr, 0, nullptr);
 	if(NULL == daq)
 	{
 		std::print("[!] Error create_cppDaq()\n");

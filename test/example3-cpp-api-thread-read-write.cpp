@@ -39,16 +39,19 @@ int main()
 	std::vector<std::string> list = GetDeviceList();
 
 	// Create obj for each usb daq
-	analog_pin an0(0);
-	analog_pin an1(1);
-	analog_pin an2(2);
-	analog_pins analogs(an0, an1, an2);
+	analog_input_pin an0(0);
+	analog_input_pin an1(1);
+	analog_input_pin an2(2);
+	analog_input_pins analogs_in(an0, an1, an2);
+
+	analog_output_pin out0(0);
+	analog_output_pins analogs_out(out0);
 
 	digital_pin di0(0);
 	digital_pin di1(1);
 	digital_pins digitals(di0, di1);
 
-	cppDaq daq6001(list[0], analogs, digitals, analog_pins_continuous{ std::vector<size_t>() }, digital_pins_continuous{ std::vector<size_t>() });
+	cppDaq daq6001(list[0], analogs_in, analogs_out, digitals, analog_pins_continuous{ std::vector<size_t>() }, digital_pins_continuous{ std::vector<size_t>() });
 
 	// Digital pin High
 

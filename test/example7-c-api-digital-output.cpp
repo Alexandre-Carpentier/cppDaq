@@ -23,7 +23,7 @@ int main()
 	int di[] = {0};
 
 	// Create a daq object with 1 digital output
-	HDAQ daq = create_cppDaq(dev, 0, NULL, 0, di, 1, NULL, 0, NULL);
+	HDAQ daq = create_cppDaq(dev, 0, NULL, 0, NULL, 0, di, 1, NULL, 0, NULL);
 	if (!daq)
 	{
 		return EXIT_FAILURE;

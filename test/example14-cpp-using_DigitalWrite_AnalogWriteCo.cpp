@@ -19,7 +19,7 @@
 // To test with R208 driver
 
 analog_input_pin HOME_PIN{ 0 };				// AI0  → R208 DB9 Pin 5 : Home position sensor
-analog_output_pin_continuous CLOCK_PIN{ 0 };	// AO0  → R208 DB9 Pin 2 : PWM step signal (speed control)
+analog_pin_continuous CLOCK_PIN{ 0 };	// AO0  → R208 DB9 Pin 2 : PWM step signal (speed control)
 digital_pin MOVE_PIN{ 0 };				// P0.0 → R208 DB9 Pin 4 : Motor enable (HIGH = active)
 digital_pin DIR_PIN{ 1 };				// P0.1 → R208 DB9 Pin 3 : Direction (HIGH = CW, LOW = CCW)
 
@@ -30,7 +30,7 @@ int main()
 	DaqConfig config;
 
 	config.setDevice("Dev1") // Auto connect to first device if empty. Default name is Dev1 if needed.
-		.setAnalogPins(analog_pins{ HOME_PIN }) // To read home position
+		.setAnalogInputPins(analog_input_pins{ HOME_PIN }) // To read home position
 		.setAnalogContinuous(analog_pins_continuous{ CLOCK_PIN }) // To make a PWM signal
 		.setDigitalPins(digital_pins{ MOVE_PIN, DIR_PIN }); // To control the direction and the movement
 

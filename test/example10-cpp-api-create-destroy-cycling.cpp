@@ -14,11 +14,11 @@ int main()
 
 	std::print(CYN"[ EXAMPLE 10] Testing opening and closing object in loop for crash...\n"); std::print(NC);
 
-	analog_pin an0{ 0 };
+	analog_input_pin an0{ 0 };
 	for (size_t i = 0; i < 2; ++i)
 	{
 		DaqConfig config;
-		config.setDevice("Dev1").setAnalogPins(analog_pins(an0));
+		config.setDevice("Dev1").setAnalogInputPins(analog_input_pins(an0));
 		cppDaq usb(config);
 
 		double mesure_volt = usb.ReadAnalogPin(an0);

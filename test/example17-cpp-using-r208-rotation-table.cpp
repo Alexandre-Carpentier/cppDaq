@@ -6,6 +6,7 @@
 // Licence:     LGPL-2.1-or-later
 /////////////////////////////////////////////////////////////////////////////
 #pragma once
+
 #include <cassert>
 #include <memory>
 #include <thread>
@@ -13,6 +14,8 @@
 #include <print>
 #include <concepts>
 #include <mutex>
+#include <algorithm>
+#include <vector>
 
 #include "term_colors.h"
 #include "../app/src/cppDaq.h"
@@ -81,8 +84,8 @@ public:
 		DaqConfig config;
 
 		config.setDevice("Dev1") // Auto connect to first device if empty. Default name is Dev1 if needed.
-			.setAnalogPins(analog_input_pins{ HOME_PIN }) // To read home position
-			.setAnalogContinuous(analog_pins_continuous{ CLOCK_PIN }) // To make a PWM signal
+			.setAnalogInputPins(analog_input_pins{ HOME_PIN }) // To read home position
+			.setAnalogOutputPins(analog_output_pins{ CLOCK_PIN }) // To make a PWM signal
 			.setDigitalPins(digital_pins{ MOVE_PIN, DIR_PIN }); // To control the direction and the movement
 
 		m_daq = std::make_unique<cppDaq>(config);
@@ -153,11 +156,11 @@ public:
 			//Act
 			if (isMoving)
 			{
-				std::print(CMAGENTA"[*] doMove(true) called\n"); std::print(CRESET);
+				std::print(CYN"[*] doMove(true) called\n"); std::print(NC);
 				//m_daq->WriteDigitalPin(MOVE_PIN, digital_state::LOW); // Enable			
 				return m_daq->StartAnalogPWM(CLOCK_PIN, Frequency_hz<double>(m_freqHz));
 			}
-			std::print(CMAGENTA"[*] doMove(false) called\n"); std::print(CRESET);
+			std::print(CYN"[*] doMove(false) called\n"); std::print(NC);
 			//m_daq->WriteDigitalPin(MOVE_PIN, digital_state::HIGH); // Disable
 			return m_daq->StopAnalogPWM(CLOCK_PIN);
 		}
@@ -167,7 +170,7 @@ public:
 	virtual bool moveTo(int64_t clockCount) override
 	{
 		std::lock_guard<std::mutex> lockInit(m_mutexAPI);
-		std::print(CMAGENTA"[*] moveTo({}) called\n", clockCount); std::print(CRESET);
+		std::print(CYN"[*] moveTo({}) called\n", clockCount); std::print(NC);
 		return true;
 	}
 
@@ -179,16 +182,16 @@ public:
 		{
 			s_lastDirection = isClockWise;
 
-			std::print(CMAGENTA"[*] clockWize = {}\n", isClockWise); std::print(CRESET);
+			std::print(CYN"[*] clockWize = {}\n", isClockWise); std::print(NC);
 
 			if (isClockWise == true)
 			{
-				std::print(CMAGENTA"[*] WRITE HIGH\n"); std::print(CRESET);
+				std::print(CYN"[*] WRITE HIGH\n"); std::print(NC);
 				m_daq->WriteDigitalPin(DIR_PIN, 1.0);// turn anticlockwise
 			}
 			else if (isClockWise == false)
 			{
-				std::print(CMAGENTA"[*] WRITE LOW\n"); std::print(CRESET);
+				std::print(CYN"[*] WRITE LOW\n"); std::print(NC);
 				m_daq->WriteDigitalPin(DIR_PIN, 0.0);// turn clockwise
 			}
 		}
@@ -231,8 +234,8 @@ public:
 		DaqConfig config;
 
 		config.setDevice("Dev1") // Auto connect to first device if empty. Default name is Dev1 if needed.
-			.setAnalogPins(analog_input_pins{ HOME_PIN }) // To read home position
-			.setAnalogPins(analog_output_pins{ SW_CLOCK_PIN }) // To make a PWM signal
+			.setAnalogInputPins(analog_input_pins{ HOME_PIN }) // To read home position
+			.setAnalogOutputPins(analog_output_pins{ SW_CLOCK_PIN }) // To make a PWM signal
 			.setDigitalPins(digital_pins{ MOVE_PIN, DIR_PIN }); // To control the direction and the movement
 
 		m_daq = std::make_unique<cppDaq>(config);
@@ -322,7 +325,7 @@ public:
 	virtual bool moveTo(int64_t clockCount) override
 	{
 		std::lock_guard<std::mutex> lockInit(m_mutexAPI);
-		std::print(CMAGENTA"[*] moveTo({}) called\n", clockCount); std::print(CRESET);
+		std::print(CYN"[*] moveTo({}) called\n", clockCount); std::print(NC);
 		return true;
 	}
 
@@ -334,16 +337,16 @@ public:
 		{
 			s_lastDirection = isClockWise;
 
-			std::print(CMAGENTA"[*] clockWize = {}\n", isClockWise); std::print(CRESET);
+			std::print(CYN"[*] clockWize = {}\n", isClockWise); std::print(NC);
 
 			if (isClockWise == true)
 			{
-				std::print(CMAGENTA"[*] WRITE HIGH\n"); std::print(CRESET);
+				std::print(CYN"[*] WRITE HIGH\n"); std::print(NC);
 				m_daq->WriteDigitalPin(DIR_PIN, 1.0);// turn anticlockwise
 			}
 			else if (isClockWise == false)
 			{
-				std::print(CMAGENTA"[*] WRITE LOW\n"); std::print(CRESET);
+				std::print(CYN"[*] WRITE LOW\n"); std::print(NC);
 				m_daq->WriteDigitalPin(DIR_PIN, 0.0);// turn clockwise
 			}
 		}
@@ -369,5 +372,11 @@ private:
 
 int main()
 {
+	clockBased_hardware clk;
+	clk.start(1000.0);
+	clk.doMove(true);
+	std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+	clk.doMove(false);
+	clk.stop();
 	return 0;
 }

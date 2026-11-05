@@ -45,12 +45,13 @@ public:
     [[nodiscard]] IO_TYPE get_type();
 
     [[nodiscard]] double read(pin_t analog_io_id);
+    bool write(pin_t analog_io_id, double voltage); // TODO: Fix bad abstraction
 
     void close();
 
     daqmxCreateAnalogInputs(const std::string device_name, analog_input_pins analog_io_id);
 
-    ~daqmxCreateAnalogInputs    ();
+    ~daqmxCreateAnalogInputs();
 };
 
 class daqmxCreateAnalogOutputs final {
@@ -69,6 +70,7 @@ public:
     [[nodiscard]] DAQ_AN_CREATE_STATUS get_status();
     [[nodiscard]] IO_TYPE get_type();
 
+    [[nodiscard]] double read(pin_t analog_io_id); // TODO: Fix bad abstraction
     bool write(pin_t analog_io_id, double voltage);
 
     void close();

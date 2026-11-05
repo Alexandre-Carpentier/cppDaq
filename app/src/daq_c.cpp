@@ -69,7 +69,7 @@ double get_analog_value_(HDAQ handle, int io_id) // Return a volt value
 	}
 	DAQ* impl = (DAQ*)handle;
 
-	analog_pin pin(io_id);
+	analog_input_pin pin(io_id);
 	return impl->m_daq->ReadAnalogPin(pin); // Forward
 }
 
@@ -114,7 +114,8 @@ bool set_analog_value_(HDAQ handle, int pin, double value)
 //
 
 HDAQ create_cppDaq(const char* device, 
-	const int analog_count, int analog_io_id[32],
+	const int analog_input_count, int analog_in_io_id[32],
+	const int analog_output_count, int analog_out_io_id[32],
 	const int digital_count, int digital_io_id[32],
 	const int analog_co_count, int analog_co_io_id[32],
 	const int digital_co_count, int digital_co_io_id[32])
@@ -128,11 +129,20 @@ HDAQ create_cppDaq(const char* device,
 		return NULL;
 	}
 
-	if (analog_count > 0)
+	if (analog_input_count > 0)
 	{
-		if (analog_io_id == NULL)
+		if (analog_in_io_id == NULL)
 		{
-			printf("[!] Error: analog_io_id is NULL\n"); 
+			printf("[!] Error: analog_in_io_id is NULL\n"); 
+			return NULL;
+		}
+	}
+
+	if (analog_output_count > 0)
+	{
+		if (analog_out_io_id == NULL)
+		{
+			printf("[!] Error: analog_out_io_id is NULL\n");
 			return NULL;
 		}
 	}
@@ -165,11 +175,20 @@ HDAQ create_cppDaq(const char* device,
 	}
 
 	// Analog out off bounds
-	if(analog_count <0)
+	if(analog_input_count <0)
 	{
 		return NULL;
 	}
-	if (analog_count > MAX_ANALOG_INPUT_CHANNELS)
+	if (analog_input_count > MAX_ANALOG_INPUT_CHANNELS)
+	{
+		return NULL;
+	}
+
+	if (analog_output_count < 0)
+	{
+		return NULL;
+	}
+	if (analog_output_count > MAX_ANALOG_OUTPUT_CHANNELS)
 	{
 		return NULL;
 	}
@@ -210,11 +229,18 @@ HDAQ create_cppDaq(const char* device,
 
 	DAQ* impl =  new DAQ();
 
-	// Transfert C style to analog vector 
-	std::vector<size_t> analog_io;
-	for (size_t i = 0; i < analog_count; i++)
+	// Transfert C style to analog input vector 
+	std::vector<size_t> analog_input_io;
+	for (size_t i = 0; i < analog_input_count; i++)
 	{
-		analog_io.emplace_back(analog_io_id[i]);
+		analog_input_io.emplace_back(analog_in_io_id[i]);
+	}
+
+	// Transfert C style to analog output vector 
+	std::vector<size_t> analog_output_io;
+	for (size_t i = 0; i < analog_output_count; i++)
+	{
+		analog_output_io.emplace_back(analog_out_io_id[i]);
 	}
 
 	// Transfert C style to digital vector 
@@ -241,7 +267,8 @@ HDAQ create_cppDaq(const char* device,
 	DaqConfig config;
 
 	config.setDevice("Dev1")
-		.setAnalogPins(analog_pins(analog_io))
+		.setAnalogInputPins(analog_input_pins(analog_input_io))
+		.setAnalogOutputPins(analog_output_pins(analog_output_io))
 		.setDigitalPins(digital_pins(digital_io))
 		.setAnalogContinuous(analog_pins_continuous(analog_co_io))
 		.setDigitalContinuous(digital_pins_continuous(digital_co_io));

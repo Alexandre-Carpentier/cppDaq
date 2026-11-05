@@ -23,7 +23,7 @@ int main()
 
 		// Setup pins
 
-	analog_pin an2(2);
+	analog_input_pin an2(2);
 	digital_pin di0(0);
 
 	if (list.size() <2)
@@ -34,9 +34,9 @@ int main()
 	}
 	// Create obj for each usb daq
 
-	cppDaq daq6001(list[0], analog_pins(an2), digital_pins(di0), analog_pins_continuous{}, digital_pins_continuous{});
+	cppDaq daq6001(list[0], analog_input_pins(an2), analog_output_pins(),digital_pins(di0), analog_pins_continuous{}, digital_pins_continuous{});
 
-	cppDaq daq6501(list[1], analog_pins(), digital_pins(di0), analog_pins_continuous{}, digital_pins_continuous{});
+	cppDaq daq6501(list[1], analog_input_pins(), analog_output_pins(), digital_pins(di0), analog_pins_continuous{}, digital_pins_continuous{});
 
 	// Digital pin High
 

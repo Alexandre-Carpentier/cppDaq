@@ -46,6 +46,13 @@ double daqmxCreateAnalogInputs::read(pin_t analog_io_id)
     return result;
 }
 
+bool daqmxCreateAnalogInputs::write(pin_t analog_io_id, double value)
+{
+    assert(analog_io_id.get() >= 0);
+    assert(analog_io_id.get() < MAX_ANALOG_INPUT_CHANNELS);
+    return false;
+}
+
 void daqmxCreateAnalogInputs::close()
 {
     #ifndef __aarch64__ 
@@ -205,6 +212,13 @@ DAQ_AN_CREATE_STATUS daqmxCreateAnalogOutputs::get_status()
 IO_TYPE daqmxCreateAnalogOutputs::get_type()
 {
     return m_type;
+}
+
+double daqmxCreateAnalogOutputs::read(pin_t analog_io_id)
+{
+    assert(analog_io_id.get() >= 0);
+    assert(analog_io_id.get() < MAX_ANALOG_OUTPUT_CHANNELS);
+    return NAN;
 }
 
 bool daqmxCreateAnalogOutputs::write(pin_t analog_io_id, double voltage)
