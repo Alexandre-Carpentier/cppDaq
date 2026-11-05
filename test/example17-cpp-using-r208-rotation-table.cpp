@@ -375,10 +375,14 @@ int main()
 	clockBased_hardware clk;
 	clk.start(10.0);
 
+	double measure = 0.0;
+	clk.acquires(measure);
+
 	for (int i = 0; i < 100; ++i)
 	{
 		clk.doMove(true);
 	}
+
 	clk.doMove(false);
 	clk.stop();
 	return 0;

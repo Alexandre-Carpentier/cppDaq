@@ -386,11 +386,11 @@ public:
         const analog_pins_continuous ans_co, 
         const digital_pins_continuous dis_co
     ) :
-        m_analog_input_io_id(ans),
-        m_analog_output_io_id(aos),
-        m_digital_io_id(dis),
-        m_analog_co_io_id(ans_co),
-        m_digital_co_io_id(dis_co),
+        m_ans(ans),
+        m_aos(aos),
+        m_dis(dis),
+        m_ans_co(ans_co),
+        m_dis_co(dis_co),
 
         use_analog_input(false),
         use_analog_output(false),
@@ -402,6 +402,8 @@ public:
         dbg::print("[*] cppDaqimpl ctor.\n");
 
         // Sanitize for each type of io
+        std::print("ans: {}\n", ans.size());
+        std::print("m_ans: {}\n", m_ans.size());
 
         SANITIZE_STATUS analog_input_validity = do_sanitize(ans, MAX_ANALOG_INPUT_CHANNELS);
         SANITIZE_STATUS analog_output_validity = do_sanitize(aos, MAX_ANALOG_OUTPUT_CHANNELS);
@@ -471,21 +473,22 @@ public:
         }
 
         // Setup analog and digital ios
-
+        std::print("m_ans: {}\n", m_ans.size());
         if (analog_input_validity == SANITIZE_STATUS::NO_ERR)
         {
             use_analog_input = true;
-            std::vector<io> analog_inputs = create_analog_input_io(m_device, ans);
-            for (auto& an : analog_inputs)
+            std::vector<io> analog_inputs = create_analog_input_io(m_device, m_ans);
+            std::print("m_ans: {}\n", m_ans.size());
+            for (auto& an_ : analog_inputs)
             {
-                ios.push_back(an);
+                ios.push_back(an_);
             }
         }
-
+        std::print("m_ans: {}\n", m_ans.size());
         if (analog_output_validity == SANITIZE_STATUS::NO_ERR)
         {
             use_analog_output = true;
-            std::vector<io> analog_outputs = create_analog_output_io(m_device, aos);
+            std::vector<io> analog_outputs = create_analog_output_io(m_device, m_aos);
             for (auto& an : analog_outputs)
             {
                 ios.push_back(an);
@@ -495,7 +498,7 @@ public:
         if (digital_validity == SANITIZE_STATUS::NO_ERR)
         {
             use_digital = true;
-            std::vector<io> digitals = create_digital_io(m_device, m_digital_io_id);
+            std::vector<io> digitals = create_digital_io(m_device, m_dis);
             for (auto& di : digitals)
             {
                 ios.push_back(di);
@@ -505,7 +508,7 @@ public:
         if (analog_co_validity == SANITIZE_STATUS::NO_ERR)
         {
             use_analog_co = true;
-            std::vector<io_co> analogs_co = create_analog_co_io(m_device, m_analog_co_io_id);
+            std::vector<io_co> analogs_co = create_analog_co_io(m_device, m_ans_co);
             for (auto& an_co : analogs_co)
             {
                 ios_co.push_back(an_co);
@@ -515,7 +518,7 @@ public:
         if (digital_co_validity == SANITIZE_STATUS::NO_ERR)
         {
             use_digital_co = true;
-            std::vector<io_co> digitals_co = create_digital_co_io(m_device, m_digital_co_io_id);
+            std::vector<io_co> digitals_co = create_digital_co_io(m_device, m_dis_co);
             for (auto& di_co : digitals_co)
             {
                 ios_co.push_back(di_co);
@@ -561,6 +564,8 @@ public:
     {
         // Sanitize
 
+		std::print("m_ans size: {}", m_ans.size());
+
         if (!is_io_available(ios, type))
         {
 #ifdef _WIN32
@@ -579,7 +584,7 @@ public:
 #endif
                 return NAN;
             }
-            if (!is_io_registered(pin, m_analog_input_io_id))
+            if (!is_io_registered(pin, m_ans))
             {
 #ifdef _WIN32
                 std::string msg = std::format("get_value() fails, analog input io not registered\n");
@@ -599,7 +604,7 @@ public:
 #endif
                 return NAN;
             }
-            if (!is_io_registered(pin, m_digital_io_id))
+            if (!is_io_registered(pin, m_dis))
             {
 #ifdef _WIN32
                 std::string msg = std::format("get_value() fails, digital io not registered\n");
@@ -612,7 +617,7 @@ public:
 
         io io_ = get_io_from_ios(ios, type);
 
-        size_t pos = pin_to_vec_pos(pin, m_analog_input_io_id);// Find pin pos in vec
+        size_t pos = pin_to_vec_pos(pin, m_ans);// Find pin pos in vec
         task_mutex.lock();
         auto result = std::visit([pos](auto&& arg) -> double
             {
@@ -644,7 +649,7 @@ public:
             return false;
         }
 
-        if (!is_io_registered(pin, m_digital_io_id))
+        if (!is_io_registered(pin, m_dis))
         {
             std::print("[!] IO PIN is not valid\n");
 #ifdef _WIN32
@@ -655,7 +660,7 @@ public:
         }
 
         io io_ = get_io_from_ios(ios, IO_TYPE::dig);
-        size_t pos = pin_to_vec_pos(pin, m_digital_io_id);// Find pin pos in vec
+        size_t pos = pin_to_vec_pos(pin, m_dis);// Find pin pos in vec
 
         task_mutex.lock();
         auto result = std::visit([&pos, &value](auto&& arg) -> bool
@@ -728,7 +733,7 @@ public:
             return false;
         }
 
-        if (!is_io_registered(pin, m_analog_output_io_id))
+        if (!is_io_registered(pin, m_aos))
         {
             std::print("[!] IO PIN is not valid\n");
 #ifdef _WIN32
@@ -739,7 +744,7 @@ public:
         }
 
         io io_ = get_io_from_ios(ios, IO_TYPE::aos);
-        size_t pos = pin_to_vec_pos(pin, m_analog_output_io_id);// Find pin pos in vec
+        size_t pos = pin_to_vec_pos(pin, m_aos);// Find pin pos in vec
 
         task_mutex.lock();
         auto result = std::visit([&pos, &value](auto&& arg) -> bool
@@ -785,7 +790,7 @@ public:
             return false;
         }
 
-        if (!is_io_registered(pin, m_analog_co_io_id))
+        if (!is_io_registered(pin, m_ans_co))
         {
             std::print("[!] IO PIN is not valid\n");
 #ifdef _WIN32
@@ -875,7 +880,7 @@ private:
             return false;
         }
 
-        if (!is_io_registered(pin, m_analog_co_io_id))
+        if (!is_io_registered(pin, m_ans_co))
         {
             std::print("[!] IO PIN is not valid\n");
 #ifdef _WIN32
@@ -887,7 +892,7 @@ private:
 
         io_co io_co_ = get_io_from_ios(ios_co, IO_TYPE::ana_co);
 
-        pin_t task_index(pin_to_vec_pos(pin, m_analog_co_io_id));
+        pin_t task_index(pin_to_vec_pos(pin, m_ans_co));
         task_mutex.lock();
         auto result = std::visit([&task_index, &rate](auto&& arg) -> bool
             {
@@ -917,7 +922,7 @@ private:
             return false;
         }
 
-        if (!is_io_registered(digital_io_id_co, m_digital_co_io_id))
+        if (!is_io_registered(digital_io_id_co, m_dis_co))
         {
             std::print("[!] IO PIN is not valid\n");
 #ifdef _WIN32
@@ -929,7 +934,7 @@ private:
 
         io_co io_co_ = get_io_from_ios(ios_co, IO_TYPE::dig_co);
 
-        pin_t task_index(pin_to_vec_pos(digital_io_id_co, m_digital_co_io_id));
+        pin_t task_index(pin_to_vec_pos(digital_io_id_co, m_dis_co));
 
         task_mutex.lock();
         auto result = std::visit([&task_index, &rate](auto&& arg) -> bool
@@ -968,11 +973,11 @@ private:
     std::vector<io_co> ios_co;
 	std::tuple<std::vector<io>, std::vector<io_co>> all_ios;
 
-    analog_input_pins m_analog_input_io_id;
-    analog_output_pins m_analog_output_io_id;
-    digital_pins m_digital_io_id;
-    analog_pins_continuous m_analog_co_io_id;
-    digital_pins_continuous m_digital_co_io_id;
+    analog_input_pins m_ans;
+    analog_output_pins m_aos;
+    digital_pins m_dis;
+    analog_pins_continuous m_ans_co;
+    digital_pins_continuous m_dis_co;
 
     bool use_analog_input;
     bool use_analog_output;
@@ -1059,6 +1064,7 @@ double cppDaq::ReadAnalogPin(analog_input_pin pin)
         return NAN;
     }
 
+    std::print("Reading analog pin: {}\n", pin.get());
     return pdaq->get_value(IO_TYPE::ana, pin);
 }
 
