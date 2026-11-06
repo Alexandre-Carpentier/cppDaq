@@ -71,7 +71,6 @@ void daqmxCreateAnalogInputs::close()
 daqmxCreateAnalogInputs::daqmxCreateAnalogInputs(const std::string device_name, analog_input_pins analog_io_ids):
     m_daq_ret(0), m_status(DAQ_AN_CREATE_STATUS::NO_ERR), m_type(IO_TYPE::ana)
 {
-
         //Sanitize
 
     cppDaqCheck m_daq_dev(device_name);

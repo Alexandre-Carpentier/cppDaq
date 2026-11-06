@@ -378,7 +378,7 @@ int main()
 	double measure = 0.0;
 	clk.acquires(measure);
 
-	for (int i = 0; i < 100; ++i)
+	for (int i = 0; i < 1000; ++i)
 	{
 		clk.doMove(true);
 	}

@@ -402,8 +402,6 @@ public:
         dbg::print("[*] cppDaqimpl ctor.\n");
 
         // Sanitize for each type of io
-        std::print("ans: {}\n", ans.size());
-        std::print("m_ans: {}\n", m_ans.size());
 
         SANITIZE_STATUS analog_input_validity = do_sanitize(ans, MAX_ANALOG_INPUT_CHANNELS);
         SANITIZE_STATUS analog_output_validity = do_sanitize(aos, MAX_ANALOG_OUTPUT_CHANNELS);
@@ -473,18 +471,15 @@ public:
         }
 
         // Setup analog and digital ios
-        std::print("m_ans: {}\n", m_ans.size());
         if (analog_input_validity == SANITIZE_STATUS::NO_ERR)
         {
             use_analog_input = true;
             std::vector<io> analog_inputs = create_analog_input_io(m_device, m_ans);
-            std::print("m_ans: {}\n", m_ans.size());
             for (auto& an_ : analog_inputs)
             {
                 ios.push_back(an_);
             }
         }
-        std::print("m_ans: {}\n", m_ans.size());
         if (analog_output_validity == SANITIZE_STATUS::NO_ERR)
         {
             use_analog_output = true;
@@ -563,8 +558,6 @@ public:
     double get_value(IO_TYPE type, pin_t pin)
     {
         // Sanitize
-
-		std::print("m_ans size: {}", m_ans.size());
 
         if (!is_io_available(ios, type))
         {
@@ -1064,7 +1057,6 @@ double cppDaq::ReadAnalogPin(analog_input_pin pin)
         return NAN;
     }
 
-    std::print("Reading analog pin: {}\n", pin.get());
     return pdaq->get_value(IO_TYPE::ana, pin);
 }
 
